@@ -1,0 +1,12 @@
+// @ts-nocheck
+import { browser } from 'fumadocs-mdx/runtime/browser';
+import type * as Config from '../source.config';
+
+const create = browser<typeof Config, import("fumadocs-mdx/runtime/types").InternalTypeConfig & {
+  DocData: {
+  }
+}>();
+const browserCollections = {
+  docs: create.doc("docs", {"index.mdx": () => import("../content/docs/index.mdx?collection=docs"), "quick-start.mdx": () => import("../content/docs/quick-start.mdx?collection=docs"), "tech-stack.mdx": () => import("../content/docs/tech-stack.mdx?collection=docs"), "architecture/cli-package.mdx": () => import("../content/docs/architecture/cli-package.mdx?collection=docs"), "architecture/core-package.mdx": () => import("../content/docs/architecture/core-package.mdx?collection=docs"), "architecture/i18n-package.mdx": () => import("../content/docs/architecture/i18n-package.mdx?collection=docs"), "architecture/native-app.mdx": () => import("../content/docs/architecture/native-app.mdx?collection=docs"), "architecture/overview.mdx": () => import("../content/docs/architecture/overview.mdx?collection=docs"), "architecture/typescript-config.mdx": () => import("../content/docs/architecture/typescript-config.mdx?collection=docs"), "architecture/ui-package.mdx": () => import("../content/docs/architecture/ui-package.mdx?collection=docs"), "architecture/web-app.mdx": () => import("../content/docs/architecture/web-app.mdx?collection=docs"), "deployment/android.mdx": () => import("../content/docs/deployment/android.mdx?collection=docs"), "deployment/ci-cd.mdx": () => import("../content/docs/deployment/ci-cd.mdx?collection=docs"), "deployment/desktop.mdx": () => import("../content/docs/deployment/desktop.mdx?collection=docs"), "deployment/ios.mdx": () => import("../content/docs/deployment/ios.mdx?collection=docs"), "deployment/web.mdx": () => import("../content/docs/deployment/web.mdx?collection=docs"), "guides/adding-ui-components.mdx": () => import("../content/docs/guides/adding-ui-components.mdx?collection=docs"), "guides/managing-translations.mdx": () => import("../content/docs/guides/managing-translations.mdx?collection=docs"), "guides/theming.mdx": () => import("../content/docs/guides/theming.mdx?collection=docs"), "reference/available-commands.mdx": () => import("../content/docs/reference/available-commands.mdx?collection=docs"), "reference/configuration-files.mdx": () => import("../content/docs/reference/configuration-files.mdx?collection=docs"), }),
+};
+export default browserCollections;
