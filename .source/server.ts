@@ -31,6 +31,6 @@ import type * as Config from '../source.config';
 const create = server<typeof Config, import("fumadocs-mdx/runtime/types").InternalTypeConfig & {
   DocData: {
   }
-}>({"doc":{"passthroughs":["extractedReferences"]}});
+}>();
 
 export const docs = await create.docs("docs", "content/docs", {"meta.json": __fd_glob_0, "architecture/meta.json": __fd_glob_1, "deployment/meta.json": __fd_glob_2, "guides/meta.json": __fd_glob_3, "reference/meta.json": __fd_glob_4, }, {"index.mdx": __fd_glob_5, "quick-start.mdx": __fd_glob_6, "tech-stack.mdx": __fd_glob_7, "architecture/cli-package.mdx": __fd_glob_8, "architecture/core-package.mdx": __fd_glob_9, "architecture/i18n-package.mdx": __fd_glob_10, "architecture/native-app.mdx": __fd_glob_11, "architecture/overview.mdx": __fd_glob_12, "architecture/typescript-config.mdx": __fd_glob_13, "architecture/ui-package.mdx": __fd_glob_14, "architecture/web-app.mdx": __fd_glob_15, "deployment/android.mdx": __fd_glob_16, "deployment/ci-cd.mdx": __fd_glob_17, "deployment/desktop.mdx": __fd_glob_18, "deployment/ios.mdx": __fd_glob_19, "deployment/web.mdx": __fd_glob_20, "guides/adding-ui-components.mdx": __fd_glob_21, "guides/managing-translations.mdx": __fd_glob_22, "guides/theming.mdx": __fd_glob_23, "reference/available-commands.mdx": __fd_glob_24, "reference/configuration-files.mdx": __fd_glob_25, });
