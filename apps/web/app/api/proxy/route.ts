@@ -48,9 +48,12 @@ export async function POST(req: Request) {
   }
 
   if (isBlockedTarget(target)) {
-    return Response.json({ error: "Target host is not allowed" }, {
-      status: 400,
-    });
+    return Response.json(
+      { error: "Target host is not allowed" },
+      {
+        status: 400,
+      }
+    );
   }
 
   try {
