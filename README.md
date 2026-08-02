@@ -2,414 +2,180 @@
 
 # 🪐 Hyperion
 
-**Agentic Workspace Environment for Parallel AI Coding**
+**Production-Grade Cross-Platform Starter & Parallel AI Agent Workspace**
 
+[![Live Website](https://img.shields.io/badge/Website-hyperions.bond-6366f1.svg)](https://hyperions.bond)
+[![Main Repository](https://img.shields.io/badge/GitHub-Malaybhai11%2Fhyperionweb-black.svg?logo=github)](https://github.com/Malaybhai11/hyperionweb.git)
 [![License: MIT](https://img.shields.io/badge/License-MIT-6366f1.svg)](https://opensource.org/licenses/MIT)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.5-blue.svg)](https://www.typescriptlang.org/)
-[![Tauri](https://img.shields.io/badge/Tauri-2.x-orange.svg)](https://tauri.app/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue.svg)](https://www.typescriptlang.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-16-black.svg)](https://nextjs.org/)
+[![Tauri](https://img.shields.io/badge/Tauri-2.x-orange.svg)](https://tauri.app/)
+[![pnpm](https://img.shields.io/badge/pnpm-10.x-orange.svg)](https://pnpm.io/)
 
 </div>
 
 ---
 
-> **Stop juggling 47 browser tabs to use AI agents.**
+> **Build cross-platform applications from a single codebase & orchestrate parallel AI coding agents.**
 >
-> Hyperion is a cross-platform workspace environment where you orchestrate multiple AI coding agents across different projects. Create a workspace per project in the sidebar — terminals, agents, tasks, and prompts update instantly. Each workspace is an **isolated command center**.
+> Hyperion is both a production-grade cross-platform starter template and a powerful agentic workspace environment. One unified codebase ships seamlessly to **Web (Next.js 16 SSR + PWA)**, **Desktop (Tauri 2 on Windows, macOS, Linux)**, and **Mobile (Android, iOS)**.
+
+🌐 **Live Demo & Site:** [hyperions.bond](https://hyperions.bond)  
+📦 **Main Repository:** [github.com/Malaybhai11/hyperionweb](https://github.com/Malaybhai11/hyperionweb.git)
 
 ---
 
-## Why Hyperion?
+## 🚀 Key Highlights & Architecture
 
-Developers using AI coding agents today are stuck in a loop:
-
-```
-Open terminal → run agent → switch to browser → check output → 
-open notes → find prompt → copy prompt → switch back → 
-paste prompt → agent fails → open terminal → debug → repeat
-```
-
-Hyperion kills this loop. **One workspace per project. Everything you need — terminals, agents, tasks, prompts — lives inside it.**
-
-| Without Hyperion | With Hyperion |
-|:---:|:---:|
-| 12 terminal windows | Grid of scoped terminals |
-| Copy-paste prompts from notes | Versioned prompt forge |
-| Manually track what agents did | Kanban board with agent dispatch |
-| Switch between 5 tools | One workspace, one view |
-| One project at a time | Multi-workspace sidebar |
+- ⚡ **Single Codebase, All Platforms**: Standard Next.js 16 for Web (SSR) and static HTML export for Tauri 2 (Native Desktop & Mobile) loading into a Rust-backed system webview.
+- 🎨 **40+ OKLCh Color Themes**: Instant theme switching with light/dark variants built into `@workspace/ui` using Tailwind CSS v4 and shadcn/ui.
+- 🌍 **Type-Safe i18n**: Multi-language support across 10 languages (`de`, `en`, `es`, `fr`, `it`, `ja`, `pt`, `ru`, `tr`, `zh`) powered by `next-intl`.
+- 🗂️ **Multi-Workspace Agent Environment**: Isolated project spaces with workspace-scoped terminal grids, agent pools, kanban task boards, and versioned prompt forge.
+- 🤖 **Parallel AI Agent Orchestration**: Run multiple AI coding agents simultaneously in terminal panes, assign tasks via drag-and-drop, and orchestrate agent swarms.
+- 🛠️ **CLI Scaffolder**: Scaffold projects directly via `create-hyperion` CLI published to npm (`npm create hyperion@latest`).
+- ⚡ **Monorepo Powered by Turborepo & pnpm**: Lightning-fast builds, strict workspace boundaries, zero runtime cross-contamination.
 
 ---
 
-## Features
-
-### 🗂️ Multi-Workspace System
-
-The core of Hyperion. The sidebar holds all your workspaces — each one is a self-contained project environment.
+## 📦 Monorepo Structure
 
 ```
-┌──────────┐
-│ SIDEBAR  │
-│          │
-│ 🟢 claude│  ← Active workspace
-│ ⚪ claude│
-│ ⚪ claude│
-│ ⚪ claude│
-│          │
-│ + Create │
-└──────────┘
+.
+├── apps/
+│   ├── web/                # Next.js 16 (SSR), Landing page, Docs (Fumadocs), PWA (Serwist)
+│   └── native/             # Next.js 16 (Static Export) + Tauri 2 (Desktop & Mobile)
+│
+├── packages/
+│   ├── core/               # Shared business logic: pages, components, hooks, stores, providers
+│   ├── ui/                 # Design system: shadcn/ui primitives, 40+ OKLCh themes, global CSS
+│   ├── i18n/               # Type-safe translations for 10 languages (next-intl)
+│   ├── cli/                # Scaffolding CLI (`create-hyperion`)
+│   └── typescript-config/  # Shared tsconfig presets
+│
+└── content/                # Documentation & MDX contents
 ```
 
-Switch a workspace → **everything changes**:
-- Terminal grid loads that project's terminals
-- Agent pool shows that project's agents
-- Task board displays that project's tasks
-- Prompt forge holds that project's prompts
+### Dependency Flow
 
-Create unlimited workspaces. Each one is isolated. No cross-contamination.
+```
+apps/web  &  apps/native
+  └── @workspace/core
+        ├── @workspace/ui
+        └── @workspace/i18n
+```
 
 ---
 
-### 🤖 Agent Grid
+## ✨ Workspace & Agent Features
 
-Run multiple AI coding agents in parallel, each in its own terminal pane.
+### 🗂️ Multi-Workspace Isolation
+Create self-contained workspaces per project in the sidebar. Switching workspaces instantly updates the active terminal grid, agent pool, task board, and prompt forge with zero cross-contamination.
 
-```
-┌───────────────┬───────────────┐
-│   Agent-1     │   Agent-2     │
-│   🔨 Auth     │   🔨 API      │
-│   Status: ✅  │   Status: 🔄  │
-├───────────────┼───────────────┤
-│   Agent-3     │   Agent-4     │
-│   🔨 UI       │   🔨 Tests    │
-│   Status: ⏳  │   Status: ⏳  │
-└───────────────┴───────────────┘
-```
+### 🤖 Terminal Multiplexer & Agent Grid
+- Run multiple AI agents concurrently, each in a dedicated terminal pane.
+- Tiled xterm.js terminal panes with split horizontal/vertical support.
+- Real-time output streaming with full PTY process control.
 
-- Spawn agents from the task board or manually
-- Each agent gets a dedicated terminal pane
-- Real-time output streaming
-- Stop, restart, or reassign agents on the fly
-
----
-
-### 📟 Terminal Multiplexer
-
-Tiled terminal panes with split support. Each terminal is scoped to the active workspace's project directory.
-
-- **Split** horizontally or vertically
-- **Resize** panes by dragging
-- **Tabs** for quick switching
-- **Scoped** — terminals belong to workspaces
-
-Run dev servers, watch builds, monitor agent output — all in one view.
-
----
-
-### 📋 Task Board (Kanban)
-
-Create tasks, assign them to agents, track progress.
-
-```
-┌─────────────┬──────────────┬─────────────┬──────────┐
-│  BACKLOG    │ IN PROGRESS  │   REVIEW    │   DONE   │
-├─────────────┼──────────────┼─────────────┼──────────┤
-│ Add login   │ Build REST   │ Fix auth    │ Init     │
-│ page        │ endpoints    │ redirect    │ project  │
-│             │              │             │          │
-│ Write tests │ Setup DB     │             │ CI/CD    │
-│ for API     │ schema       │             │ pipeline │
-└─────────────┴──────────────┴─────────────┴──────────┘
-```
-
-**Drag a task onto an agent → it starts working.** Real-time status updates flow back to the board.
-
----
+### 📋 Interactive Task Board (Kanban)
+- Drag-and-drop task assignment to agents via `@dnd-kit`.
+- Real-time progress and status updates streaming from agent processes back to the task board.
 
 ### ⚡ Prompt Forge
-
-Version control your agent prompts. No more losing that perfect prompt in a chat history.
-
-```
-prompts/
-├── build-api.md          v1.0 → v1.1 → v1.2
-├── fix-bug.md            v1.0
-├── write-tests.md        v1.0 → v1.1
-└── refactor-auth.md      v1.0
-```
-
-- Create prompt templates per workspace
-- Version and iterate
-- A/B test different approaches
-- Attach prompts to kanban tasks
+- Version-controlled agent prompt templates per workspace.
+- Iterate, refine, and attach prompts directly to Kanban tasks.
 
 ---
 
-### 🐝 Agent Swarm
-
-For complex tasks that need multiple agents working together.
-
-```
-Agent-1: "Design database schema"
-    ↓ (when done)
-Agent-2: "Build API endpoints"     Agent-3: "Create UI components"
-    ↓ (when both done)
-Agent-4: "Write integration tests"
-```
-
-Define task dependencies. Hyperion orchestrates the execution order.
-
----
-
-## Architecture
-
-```
-┌─────────────────────────────────────────────────────┐
-│                  HYPERION SHELL                      │
-│           (Tauri 2 Desktop / Next.js Web)            │
-├───────────┬─────────────────────────────────────────┤
-│           │                                         │
-│ SIDEBAR   │           WORKSPACE VIEW                │
-│           │                                         │
-│ ┌───────┐ │  ┌─────────────┬─────────────┐        │
-│ │ Work- │ │  │ Terminal-1  │ Terminal-2  │        │
-│ │ spaces│ │  │  (dev)      │  (test)     │        │
-│ │       │ │  ├─────────────┼─────────────┤        │
-│ │ 🟢 A  │ │  │  Agent-1    │  Agent-2    │        │
-│ │ ⚪ B  │ │  │  Output     │  Output     │        │
-│ │ ⚪ C  │ │  └─────────────┴─────────────┘        │
-│ │       │ │  ┌─────────────────────────────┐      │
-│ │ + New │ │  │    TASK BOARD (Kanban)       │      │
-│ └───────┘ │  └─────────────────────────────┘      │
-│           │  ┌─────────────────────────────┐      │
-│           │  │    PROMPT FORGE              │      │
-│           │  └─────────────────────────────┘      │
-├───────────┴─────────────────────────────────────────┤
-│                  BACKEND LAYER                       │
-│                                                     │
-│  ┌──────────────┐  ┌──────────────┐               │
-│  │  Workspace   │  │  PTY Pool    │               │
-│  │  Manager     │  │  (terminals) │               │
-│  ├──────────────┤  ├──────────────┤               │
-│  │  Agent       │  │  WebSocket   │               │
-│  │  Spawner     │  │  Server      │               │
-│  ├──────────────┤  ├──────────────┤               │
-│  │  Task        │  │  SQLite      │               │
-│  │  Scheduler   │  │  (persistence)│              │
-│  └──────────────┘  └──────────────┘               │
-└─────────────────────────────────────────────────────┘
-```
-
-### Data Flow
-
-```
-User creates workspace
-    → Workspace Manager creates isolated scope
-    → Sidebar updates
-    → Workspace view renders with empty terminal grid + board
-
-User spawns agent on task
-    → Agent Spawner launches process
-    → PTY Pool allocates terminal
-    → Agent Grid renders new pane
-    → WebSocket streams output to terminal + board status
-
-User switches workspace
-    → Workspace Manager swaps active scope
-    → Terminal grid re-renders with new terminals
-    → Agent pool shows new workspace's agents
-    → Task board loads new workspace's tasks
-```
-
----
-
-## Tech Stack
+## 🛠️ Stack & Technologies
 
 | Layer | Technology | Purpose |
 |:------|:-----------|:--------|
-| **Shell** | Tauri 2 / Next.js 16 | Cross-platform desktop + web |
-| **UI** | React 19 + Tailwind v4 + shadcn/ui | Design system (40+ themes) |
-| **State** | Zustand + localStorage | Workspace + agent state |
-| **Terminal** | xterm.js + node-pty | Multi-pane terminal grid |
-| **Agent Runtime** | Vercel AI SDK / LangChain | LLM agent orchestration |
-| **Drag & Drop** | @dnd-kit | Task board interactions |
-| **Real-time** | WebSocket | Terminal I/O + agent status |
-| **Persistence** | SQLite (Tauri) / Supabase (Web) | Workspaces + prompts + tasks |
-| **Build** | Turborepo + pnpm | Monorepo tooling |
+| **Web App** | Next.js 16, Fumadocs, Serwist | SSR web application, docs, and PWA |
+| **Native App** | Tauri 2 (Rust) + Next.js Static Export | Windows, macOS, Linux, Android, iOS |
+| **UI & Styling** | React 19, Tailwind CSS v4, shadcn/ui, GSAP, Three.js / OGL | Modern responsive design with 40+ OKLCh themes |
+| **State Management** | Zustand + localStorage persistence | Workspace, terminal, task, and agent state |
+| **Terminal & Realtime** | xterm.js, node-pty, WebSockets | Scoped terminal grids and live process streams |
+| **i18n** | next-intl | Type-safe internationalization (10 languages) |
+| **Tooling & Linter** | Turborepo, pnpm v10, Biome / Ultracite | Monorepo task runner, strict zero-config linter & formatter |
 
 ---
 
-## Getting Started
+## 💻 Getting Started
 
 ### Prerequisites
 
 - [Node.js](https://nodejs.org/) v20+
-- [pnpm](https://pnpm.io/) v10+
-- [Rust](https://www.rust-lang.org/tools/install) (for Tauri desktop builds)
+- [pnpm](https://pnpm.io/) v10+ (enable via `corepack enable`)
+- [Rust](https://www.rust-lang.org/tools/install) (required for native desktop & mobile builds)
 
-### Setup
+### Setup & Installation
 
 ```bash
-# Clone the repo
-git clone https://github.com/Bhagirathsinhrana378/Hyperion.git
-cd Hyperion
+# Clone the main repository
+git clone https://github.com/Malaybhai11/hyperionweb.git
+cd hyperionweb
 
-# Install dependencies
+# Install dependencies across monorepo (always use pnpm)
 pnpm install
 
-# Run web app
-pnpm web dev
+# Run web app & native app in parallel
+pnpm dev
 
-# Run desktop app
-pnpm tauri dev
-```
-
-### First Run
-
-1. Open Hyperion
-2. Click **+ Create** in the sidebar
-3. Name your workspace (e.g., "KeyKing")
-4. Open a terminal → it's scoped to that workspace
-5. Create a task on the board → assign to an agent
-6. Watch the agent work in its terminal pane
-
----
-
-## Workspace Deep Dive
-
-Each workspace is a **complete project environment**:
-
-```
-Workspace: "KeyKing"
-│
-├── 📟 Terminals (project-scoped)
-│   ├── Terminal 1: pnpm dev
-│   ├── Terminal 2: pnpm test --watch
-│   └── Terminal 3: git status
-│
-├── 🤖 Agents (task-bound)
-│   ├── Agent 1: "Implement OAuth" → ✅ Complete
-│   ├── Agent 2: "Build /api/users" → 🔄 Running
-│   └── Agent 3: "Write integration tests" → ⏳ Queued
-│
-├── 📋 Tasks (kanban board)
-│   ├── Backlog: [Setup CI, Add logging]
-│   ├── In Progress: [Build REST API]
-│   ├── Review: [Fix auth redirect]
-│   └── Done: [Init project, Setup DB]
-│
-└── ⚡ Prompts (versioned)
-    ├── build-rest-api.md     v1.0, v1.1
-    ├── implement-oauth.md    v1.0
-    └── write-tests.md        v1.0
-```
-
-Switch to workspace "Ledgion" → completely different terminals, agents, tasks, and prompts load. **Zero cross-contamination.**
-
----
-
-## Project Structure
-
-```
-apps/
-  web/                    Next.js (SSR) — web app + PWA
-  native/                 Tauri 2 — desktop & mobile
-
-packages/
-  core/                   Shared logic
-  ├── pages/
-  │   ├── workspace-page.tsx        Main IDE layout
-  │   ├── terminal-page.tsx         Terminal grid
-  │   └── kanban-page.tsx           Task board
-  ├── components/
-  │   ├── terminal/                 xterm.js wrapper + grid
-  │   ├── agents/                   Agent panel + swarm
-  │   ├── kanban/                   Drag-and-drop board
-  │   └── prompts/                  Prompt forge
-  ├── stores/
-  │   ├── workspace-store.ts        Workspace CRUD + switching
-  │   ├── terminal-store.ts         Terminal state per workspace
-  │   ├── agent-store.ts            Agent pool + status
-  │   ├── kanban-store.ts           Tasks + columns
-  │   └── prompt-store.ts           Prompt versions
-  └── hooks/
-      ├── use-workspace.ts          Workspace lifecycle
-      ├── use-pty.ts                PTY process management
-      └── use-agent.ts              Agent communication
-
-  ui/                     Design system: shadcn/ui + 40 themes
-  i18n/                   10-language translations
-  cli/                    Scaffolding tool
+# Run individual targets
+pnpm web dev       # Web only (http://localhost:3002)
+pnpm tauri dev     # Desktop (Tauri 2)
 ```
 
 ---
 
-## Roadmap
+## 📜 Available Commands
 
-### Phase 1 — Foundation
-- [ ] Multi-workspace sidebar (create, switch, delete)
-- [ ] Workspace-scoped state isolation
-- [ ] Basic terminal pane (single xterm.js instance)
-
-### Phase 2 — Terminal Grid
-- [ ] Multi-pane terminal grid (split horizontal/vertical)
-- [ ] Resize panes by dragging
-- [ ] Terminal scoped to workspace directory
-
-### Phase 3 — Agent System
-- [ ] Agent spawning from task board
-- [ ] Real-time agent output in terminal panes
-- [ ] Agent status tracking (running/complete/failed)
-- [ ] Stop/restart/reassign agents
-
-### Phase 4 — Task Board
-- [ ] Kanban board with drag-and-drop
-- [ ] Task creation, editing, deletion
-- [ ] Agent dispatch via drag
-- [ ] Real-time status sync
-
-### Phase 5 — Prompt Forge
-- [ ] Prompt template editor
-- [ ] Version history per prompt
-- [ ] Attach prompts to tasks/agents
-- [ ] A/B testing different prompt versions
-
-### Phase 6 — Agent Swarm
-- [ ] Task dependency graph
-- [ ] Sequential agent execution
-- [ ] Parallel agent coordination
-- [ ] Swarm status dashboard
-
-### Phase 7 — Polish
-- [ ] Cross-platform builds (Windows, macOS, Linux)
-- [ ] Keyboard shortcuts
-- [ ] Plugin system for custom agents
-- [ ] Import/export workspaces
-
----
-
-## Contributing
-
-Contributions welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+Run all scripts from the repository root:
 
 ```bash
-# Create a branch
-git checkout -b feat/my-feature
+# Development
+pnpm dev                  # Starts web + native in parallel
+pnpm web dev              # Web target only
+pnpm tauri dev            # Desktop target (Tauri)
+pnpm tauri android dev    # Android dev target
+pnpm tauri ios dev        # iOS dev target
 
-# Make changes, then
-pnpm check        # Lint
-pnpm typecheck    # Type check
-pnpm build        # Build
+# Quality & Verification
+pnpm check                # Biome / Ultracite lint & format check
+pnpm fix                  # Auto-fix lint & formatting issues
+pnpm typecheck            # Run TypeScript typechecks across workspaces
+pnpm build                # Production build for all apps and packages
 
-# Commit (Conventional Commits)
-git commit -m "feat: add workspace switching"
-
-# Push and open a PR
-git push origin feat/my-feature
+# Utilities
+pnpm clean                # Clean build artifacts (.next, .turbo, dist, out)
+pnpm shadcn add <component> # Add shadcn/ui component to packages/ui
+pnpm deps:check           # Check outdated dependencies
+pnpm deps:update          # Interactively update dependencies
 ```
 
 ---
 
-## License
+## 🌐 Deployment & Official Links
 
-[MIT](LICENSE) © [BhagirathsinhRana378](https://github.com/Bhagirathsinhrana378)
+- **Live Website:** [https://hyperions.bond](https://hyperions.bond)
+- **GitHub Repository:** [https://github.com/Malaybhai11/hyperionweb.git](https://github.com/Malaybhai11/hyperionweb.git)
+- **Scaffold CLI (npm):** `npm create hyperion@latest`
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please make sure to follow Conventional Commits guidelines for commit messages (`feat:`, `fix:`, `docs:`, `style:`, `refactor:`, `perf:`).
+
+```bash
+# Check code before committing
+pnpm check
+pnpm typecheck
+```
+
+---
+
+## 📄 License
+
+[MIT](LICENSE) © [Hyperion Team](https://github.com/Malaybhai11/hyperionweb)
+
