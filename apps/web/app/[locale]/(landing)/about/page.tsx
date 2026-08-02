@@ -15,19 +15,19 @@ const principles = [
     icon: Compass,
     title: "Vision",
     description:
-      "Software that builds software. We think the next order-of-magnitude gain in engineering isn't a faster editor — it's a workforce of agents you direct instead of keystrokes you type.",
+      "Software that builds software — direct a workforce of agents instead of keystrokes you type.",
   },
   {
     icon: Sparkles,
     title: "Mission",
     description:
-      "Give every developer a team. Hyperion turns one person into an orchestrator of parallel agents — planning, coding, testing, and shipping under human command.",
+      "Turn developers into orchestrators of parallel agents — planning, coding, testing, and shipping.",
   },
   {
     icon: GitFork,
     title: "Open Source",
     description:
-      "The workspace of the AI era shouldn't be a black box. Hyperion is built in the open — inspectable agents, local execution, and a codebase you can read and fork.",
+      "Built in the open with inspectable agents, local execution, and code you can read and fork.",
   },
 ];
 
@@ -76,7 +76,7 @@ const timeline = [
 export default function AboutPage() {
   return (
     <div className="relative">
-      <div className="pointer-events-none absolute inset-x-0 top-0 z-0 h-[600px] select-none overflow-hidden opacity-80">
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-0 h-[650px] select-none overflow-hidden opacity-90">
         <Beams
           beamHeight={15}
           beamNumber={12}
@@ -89,7 +89,7 @@ export default function AboutPage() {
         />
       </div>
       {/* Hero */}
-      <section className="relative z-10 pt-36 pb-14">
+      <section className="relative z-10 pt-32 pb-6">
         <motion.div
           animate="visible"
           className="mx-auto max-w-3xl px-6 text-center"
@@ -122,15 +122,18 @@ export default function AboutPage() {
       </section>
 
       {/* Vision / Mission / Open source */}
-      <section className="mx-auto max-w-6xl px-6 py-10 md:py-14">
+      <section className="relative z-10 mx-auto max-w-6xl -mt-6 px-6 py-6 md:py-8">
         <div className="grid gap-6 lg:grid-cols-3">
           {principles.map((p, i) => (
             <Reveal direction="up" duration={300} index={i} key={p.title}>
-              <GlowCard className="h-full p-8">
-                <div className="flex size-11 items-center justify-center rounded-xl border border-border bg-secondary transition-colors duration-300 group-hover/card:border-primary/40">
-                  <p.icon className="size-5 text-primary transition-transform duration-300 ease-out group-hover/card:-rotate-3 group-hover/card:scale-110" />
+              <GlowCard
+                beam={true}
+                className="h-full border border-white/20 bg-transparent p-7 rounded-2xl transition-colors duration-300 hover:border-white/40"
+              >
+                <div className="flex size-10 items-center justify-center rounded-xl border border-white/20 bg-white/5 transition-colors duration-300 group-hover/card:border-white/40">
+                  <p.icon className="size-5 text-foreground" />
                 </div>
-                <h2 className="mt-5 font-display font-semibold text-xl tracking-tight">
+                <h2 className="mt-5 font-display font-semibold text-xl tracking-tight text-foreground">
                   {p.title}
                 </h2>
                 <p className="mt-3 text-muted-foreground text-sm leading-relaxed">
