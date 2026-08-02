@@ -6,10 +6,10 @@ import { Reveal } from "@workspace/ui/components/marketing/reveal";
 import { StarBorder } from "@workspace/ui/components/marketing/StarBorder";
 import { SpecularButton } from "@workspace/ui/components/specular-button";
 import { cn } from "@workspace/ui/lib/utils";
-import { AlertCircle, Check, Copy, Minus, Plus } from "lucide-react";
+import { AlertCircle, Check, Copy, Minus, Plus, Rocket } from "lucide-react";
 import { motion, useScroll } from "motion/react";
 import type * as React from "react";
-import { useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { Terminal } from "./terminal";
 
 /* ─────────────────────────────────────────────────────────────
@@ -334,16 +334,23 @@ export function CtaLink({
   );
 }
 
-/** Hairline scroll-progress bar pinned above the nav. */
+/** Ultra-clean glowing neon laser scroll progress bar. */
 export function ScrollProgress() {
   const { scrollYProgress } = useScroll();
+
   return (
-    <motion.div
+    <div
       aria-hidden={true}
-      className="fixed inset-x-0 top-0 z-[60] h-0.5 origin-left bg-primary/70"
-      data-slot="scroll-progress"
-      style={{ scaleX: scrollYProgress }}
-    />
+      className="pointer-events-none fixed inset-x-0 top-0 z-[100] h-1 w-full bg-white/[0.04]"
+      data-slot="scroll-progress-container"
+    >
+      {/* Active progress bar */}
+      <motion.div
+        className="h-full origin-left bg-gradient-to-r from-primary/30 via-primary to-white shadow-[0_0_12px_var(--color-primary),0_0_24px_rgba(255,255,255,0.8)]"
+        data-slot="scroll-progress"
+        style={{ scaleX: scrollYProgress }}
+      />
+    </div>
   );
 }
 

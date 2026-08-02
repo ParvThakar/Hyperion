@@ -11,7 +11,6 @@ import {
   Plus_Jakarta_Sans,
 } from "next/font/google";
 import { notFound } from "next/navigation";
-import Script from "next/script";
 import { SerwistProvider } from "../serwist";
 import "../globals.css";
 
@@ -117,13 +116,12 @@ export default async function RootLayout({
       <body
         className={`${fontSans.variable} ${fontMono.variable} ${fontDisplay.variable} ${fontBody.variable} ${fontCode.variable} font-sans antialiased`}
       >
-        <Script
+        <script
           // biome-ignore lint/security/noDangerouslySetInnerHtml: Trusted script
           dangerouslySetInnerHTML={{
             __html: themeInitScript,
           }}
           id="theme-init"
-          strategy="beforeInteractive"
         />
         <SerwistProvider swUrl="/serwist/sw.js">
           <ClerkProvider>

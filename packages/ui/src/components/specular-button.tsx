@@ -325,6 +325,10 @@ export function SpecularButton({
       },
       className: cn(buttonProps.className, child.props?.className),
       style: { ...buttonProps.style, ...child.props?.style },
+      onClick: (e: React.MouseEvent) => {
+        child.props?.onClick?.(e);
+        (buttonProps as any).onClick?.(e);
+      },
       children: (
         <>
           <span
