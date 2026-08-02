@@ -51,53 +51,44 @@ function resolveHref(assetKey: string, assets: Record<string, string>) {
   return assetKey.startsWith("http") ? assetKey : assets[assetKey];
 }
 
-function PlatformCard({
+function ActivePlatformCard({
   platform,
   assets,
-  recommended,
 }: {
   platform: PlatformCardData;
   assets: Record<string, string>;
-  recommended: boolean;
 }) {
   const resolvedDownloads = platform.downloads.filter((dl) =>
     resolveHref(dl.assetKey, assets)
   );
 
   return (
-    <div className="relative pt-3 sm:w-[258px]">
-      {recommended && (
-        <div className="absolute top-0 left-1/2 z-20 -translate-x-1/2">
-          <span className="inline-flex items-center rounded-full border border-white/15 bg-[#F5F5F5] px-4 py-1.5 font-medium text-[#111] text-xs shadow-md whitespace-nowrap">
-            Your Platform
-          </span>
-        </div>
-      )}
+    <div className="relative pt-4 w-full sm:w-[320px]">
+      {/* Floating animated "Your Platform" badge */}
+      <div className="absolute top-0 left-1/2 z-20 -translate-x-1/2">
+        {/* Soft pulsing glow behind the badge */}
+        <div className="absolute inset-0 rounded-full bg-white/20 blur-md motion-safe:animate-pulse" />
+        <span className="relative inline-flex items-center overflow-hidden rounded-full border border-white/25 bg-gradient-to-b from-white to-[#E8E8E8] px-4 py-1.5 font-semibold text-[#111] text-xs shadow-[0_2px_16px_-2px_rgba(255,255,255,0.25)] whitespace-nowrap">
+          {/* Shimmer sweep */}
+          <span className="pointer-events-none absolute inset-0 -translate-x-full animate-[shimmer_3s_ease-in-out_infinite] bg-gradient-to-r from-transparent via-white/40 to-transparent" />
+          Your Platform
+        </span>
+      </div>
+
       <GlowCard
-        beam={recommended}
-        className={cn(
-          "relative flex h-full w-full flex-col items-center justify-between overflow-visible p-6 pt-8 text-center transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-primary/20 hover:shadow-xl",
-          recommended &&
-            "border-primary/40 shadow-[0_0_32px_-14px] shadow-primary/30"
-        )}
+        beam={true}
+        className="relative flex h-full w-full flex-col items-center justify-between border-primary/30 p-8 pt-10 text-center shadow-[0_0_48px_-12px] shadow-primary/20 transition-all duration-300 hover:-translate-y-1 hover:border-primary/50 hover:shadow-primary/30 hover:shadow-xl"
         tilt={false}
       >
         <div className="flex w-full flex-col items-center">
           <CardDecorator>{platform.icon}</CardDecorator>
-          <h3 className="mt-6 font-medium text-foreground text-lg">{platform.name}</h3>
-
-          {/* Coming soon pill for non-active cards or cards without available download links */}
-          {(!recommended || resolvedDownloads.length === 0) && (
-            <div className="mt-4 flex items-center justify-center">
-              <span className="inline-flex items-center rounded-full border border-white/[0.08] bg-white/[0.05] px-3.5 py-1 text-white/65 text-xs backdrop-blur-md">
-                Coming Soon
-              </span>
-            </div>
-          )}
+          <h3 className="mt-5 font-semibold text-foreground text-xl tracking-tight">
+            {platform.name}
+          </h3>
         </div>
 
         {resolvedDownloads.length > 0 && (
-          <div className="mt-6 w-full space-y-3">
+          <div className="mt-6 w-full space-y-2.5">
             {resolvedDownloads.map((dl) => (
               <DownloadButton
                 ext={dl.ext}
@@ -113,10 +104,31 @@ function PlatformCard({
   );
 }
 
+function PlatformPill({ platform }: { platform: PlatformCardData }) {
+  return (
+    <div className="inline-flex min-w-[140px] items-center justify-center gap-2.5 rounded-full border border-white/[0.1] bg-white/[0.04] px-5 py-2.5 text-white/60 text-sm backdrop-blur-sm transition-all duration-300 hover:border-white/20 hover:bg-white/[0.07] hover:text-white/85">
+      <span className="flex shrink-0 items-center justify-center opacity-60 [&_svg]:size-4">
+        {platform.icon}
+      </span>
+      <span className="font-medium tracking-tight">{platform.name}</span>
+    </div>
+  );
+}
+
 export default function PlatformCards({
   assets,
   detectedPlatform,
 }: PlatformCardsProps) {
+  const recIndex = platformCards.findIndex(
+    (p) =>
+      !!detectedPlatform &&
+      detectedPlatform !== "unknown" &&
+      p.matchKey === detectedPlatform
+  );
+  const activeIdx = recIndex !== -1 ? recIndex : 0;
+  const activePlatform = platformCards[activeIdx]!;
+  const otherPlatforms = platformCards.filter((_, idx) => idx !== activeIdx);
+
   return (
     <section className="py-16 md:py-32">
       <div className="mx-auto max-w-6xl px-6">
@@ -131,28 +143,22 @@ export default function PlatformCards({
             </p>
           </div>
         </Reveal>
-        <div className="mx-auto mt-8 flex flex-wrap items-stretch justify-center gap-5 md:mt-16">
-          {platformCards.map((platform, i) => (
-            <Reveal
-              className="h-full"
-              direction="up"
-              duration={350}
-              index={i}
-              key={platform.name}
-              offset={32}
-            >
-              <PlatformCard
-                assets={assets}
-                platform={platform}
-                recommended={
-                  !!detectedPlatform &&
-                  detectedPlatform !== "unknown" &&
-                  platform.matchKey === detectedPlatform
-                }
-              />
-            </Reveal>
-          ))}
+
+        {/* Main active platform card */}
+        <div className="mx-auto mt-8 flex justify-center md:mt-16">
+          <Reveal direction="up" duration={350} offset={32}>
+            <ActivePlatformCard assets={assets} platform={activePlatform} />
+          </Reveal>
         </div>
+
+        {/* Other platforms as equal-width pills below */}
+        <Reveal direction="up" duration={350} offset={24}>
+          <div className="mt-6 flex items-center justify-center gap-3">
+            {otherPlatforms.map((p) => (
+              <PlatformPill key={p.name} platform={p} />
+            ))}
+          </div>
+        </Reveal>
       </div>
     </section>
   );

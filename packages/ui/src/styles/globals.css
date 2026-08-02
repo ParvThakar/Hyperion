@@ -319,3 +319,12 @@
   background-size: 200% 100%;
   animation: terminal-shimmer 2.5s infinite linear;
 }
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
