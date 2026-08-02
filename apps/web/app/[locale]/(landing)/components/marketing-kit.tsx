@@ -4,6 +4,7 @@ import { BorderBeam } from "@workspace/ui/components/landing/border-beam";
 import CountUp from "@workspace/ui/components/marketing/CountUp";
 import { Reveal } from "@workspace/ui/components/marketing/reveal";
 import { StarBorder } from "@workspace/ui/components/marketing/StarBorder";
+import { SpecularButton } from "@workspace/ui/components/specular-button";
 import { cn } from "@workspace/ui/lib/utils";
 import { AlertCircle, Check, Copy, Minus, Plus } from "lucide-react";
 import { motion, useScroll } from "motion/react";
@@ -248,20 +249,66 @@ export function Eyebrow({
 export function CtaLink({
   className,
   variant = "primary",
+  children,
   ...props
 }: React.ComponentProps<"a"> & { variant?: "primary" | "ghost" }) {
   // Imperative ref mutation instead of React state — a mousemove only
   // ever touches `transform` directly on the node, never re-renders.
   const ref = useRef<HTMLAnchorElement>(null);
 
+  if (variant === "ghost") {
+    return (
+      <SpecularButton
+        asChild
+        baseColor="#393028"
+        blur={0}
+        className={cn(
+          "inline-flex h-10 items-center justify-center gap-2 rounded-full border border-border bg-transparent px-5 font-medium text-foreground text-sm transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out hover:border-primary/40 hover:bg-muted/50 active:scale-[0.98]",
+          className
+        )}
+        followMouse
+        intensity={1.2}
+        lineColor="#ffffff"
+        proximity={250}
+        radius={9999}
+        shineFade={45}
+        shineSize={15}
+        size="md"
+        speed={0.35}
+        textColor="#ecebe5"
+        thickness={1}
+        tint="#ffffff"
+        tintOpacity={0}
+      >
+        <a
+          onMouseLeave={() => {
+            if (ref.current) {
+              ref.current.style.transform = "";
+            }
+          }}
+          onMouseMove={(e) => {
+            const rect = ref.current?.getBoundingClientRect();
+            if (!(rect && ref.current)) {
+              return;
+            }
+            const x = (e.clientX - (rect.left + rect.width / 2)) * 0.12;
+            const y = (e.clientY - (rect.top + rect.height / 2)) * 0.25;
+            ref.current.style.transform = `translate(${x}px, ${y}px)`;
+          }}
+          ref={ref}
+          {...props}
+        >
+          {children}
+        </a>
+      </SpecularButton>
+    );
+  }
+
   return (
-    // biome-ignore lint/a11y/useValidAnchor: consumers pass href
     <a
       className={cn(
         "inline-flex h-10 items-center justify-center gap-2 rounded-full px-5 font-medium text-sm transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out active:scale-[0.98]",
-        variant === "primary"
-          ? "bg-primary text-primary-foreground hover:bg-primary/85 hover:shadow-[0_0_24px_-4px] hover:shadow-primary/40"
-          : "border border-border bg-transparent text-foreground hover:border-primary/40 hover:bg-muted/50",
+        "bg-primary text-primary-foreground hover:bg-primary/85 hover:shadow-[0_0_24px_-4px] hover:shadow-primary/40",
         className
       )}
       data-slot="cta-link"
@@ -281,7 +328,9 @@ export function CtaLink({
       }}
       ref={ref}
       {...props}
-    />
+    >
+      {children}
+    </a>
   );
 }
 

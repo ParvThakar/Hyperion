@@ -668,7 +668,6 @@ export function NewWorkspaceDialog({
                 <Label className="select-none font-bold text-[10px] text-muted-foreground/80 uppercase tracking-wider">
                   Working Directory
                 </Label>
-                {/* biome-ignore lint/a11y/noStaticElementInteractions: drag-and-drop region */}
                 {/* biome-ignore lint/a11y/noNoninteractiveElementInteractions: drag-and-drop region */}
                 <div
                   className={cn(

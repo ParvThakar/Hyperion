@@ -1,7 +1,6 @@
 import { siteConfig } from "@workspace/core/config/site";
 import { Button } from "@workspace/ui/components/button";
 import { Reveal } from "@workspace/ui/components/marketing/reveal";
-import { cn } from "@workspace/ui/lib/utils";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import type { Platform } from "@/lib/detect-platform";
@@ -9,7 +8,7 @@ import {
   type PlatformCardData,
   platformCards,
 } from "../download/platform-mappings";
-import { Badge, Eyebrow, GlowCard } from "./marketing-kit";
+import { Eyebrow, GlowCard } from "./marketing-kit";
 
 interface PlatformCardsProps {
   assets: Record<string, string>;
@@ -125,7 +124,7 @@ export default function PlatformCards({
       detectedPlatform !== "unknown" &&
       p.matchKey === detectedPlatform
   );
-  const activeIdx = recIndex !== -1 ? recIndex : 0;
+  const activeIdx = recIndex === -1 ? 0 : recIndex;
   const activePlatform = platformCards[activeIdx]!;
   const otherPlatforms = platformCards.filter((_, idx) => idx !== activeIdx);
 

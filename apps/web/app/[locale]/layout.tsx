@@ -64,8 +64,9 @@ export const metadata: Metadata = {
     statusBarStyle: "black-translucent",
     title: APP_DEFAULT_TITLE,
   },
-  formatDetection: {
-    telephone: false,
+  icons: {
+    icon: "/main_logo.png",
+    apple: "/main_logo.png",
   },
   openGraph: {
     type: "website",
