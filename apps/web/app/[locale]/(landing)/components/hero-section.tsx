@@ -30,12 +30,11 @@ import {
 } from "motion/react";
 import Image from "next/image";
 import Link from "next/link";
-import type { CSSProperties } from "react";
 import { useEffect, useRef, useState } from "react";
 import { HeroBackdrop } from "./hero-backdrop";
 import { CtaLink, Eyebrow, GlowCard } from "./marketing-kit";
 import { easeOut, Marquee } from "./motion-primitives";
-import type { TerminalLineInput } from "./terminal";
+import { Terminal, type TerminalLineInput } from "./terminal";
 
 /* ── Copy ─────────────────────────────────────────────────── */
 
@@ -194,80 +193,6 @@ function AgentTicker() {
   );
 }
 
-/** Concentric orbit rings with accent dots circling a pulsing core —
- *  the swarm, abstracted. Pure CSS rotation, transform-only. */
-function SwarmOrbit() {
-  const rings = [
-    { size: "38%", dur: "14s", dots: 1, reverse: false },
-    { size: "64%", dur: "22s", dots: 2, reverse: true },
-    { size: "90%", dur: "32s", dots: 3, reverse: false },
-  ];
-
-  return (
-    <div className="relative mx-auto flex aspect-square w-full max-w-md items-center justify-center">
-      {rings.map((ring) => (
-        <div
-          className="absolute rounded-full border border-border/70"
-          key={ring.size}
-          style={{ width: ring.size, height: ring.size }}
-        >
-          <div
-            className={cn(
-              "landing-orbit absolute inset-0",
-              ring.reverse && "landing-orbit-reverse"
-            )}
-            style={{ "--orbit-dur": ring.dur } as CSSProperties}
-          >
-            {Array.from({ length: ring.dots }).map((_, di) => (
-              <div
-                className="absolute inset-0"
-                // biome-ignore lint/suspicious/noArrayIndexKey: static decorative dots
-                key={di}
-                style={{ transform: `rotate(${(360 / ring.dots) * di}deg)` }}
-              >
-                <span className="absolute top-0 left-1/2 size-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary shadow-[0_0_12px_2px] shadow-primary/50" />
-              </div>
-            ))}
-          </div>
-        </div>
-      ))}
-
-      {/* Core */}
-      <div className="relative flex size-16 items-center justify-center rounded-2xl border border-primary/40 bg-secondary shadow-[0_0_40px_-8px] shadow-primary/40">
-        <Bot className="size-7 text-primary" />
-        <span
-          aria-hidden={true}
-          className="landing-glow-breathe absolute inset-0 -z-10 rounded-2xl bg-primary/20 blur-xl"
-        />
-      </div>
-
-      {/* Floating agent chips */}
-      <span
-        className="landing-float absolute top-[16%] left-[4%] rounded-full border border-border bg-card px-2.5 py-1 font-mono text-[10px] text-muted-foreground"
-        style={{ "--float-dur": "6s" } as CSSProperties}
-      >
-        agent-02 · coding
-      </span>
-      <span
-        className="landing-float absolute top-[42%] right-[2%] rounded-full border border-border bg-card px-2.5 py-1 font-mono text-[10px] text-muted-foreground"
-        style={
-          { "--float-dur": "7s", "--float-delay": "-2.5s" } as CSSProperties
-        }
-      >
-        agent-04 · reviewing
-      </span>
-      <span
-        className="landing-float absolute bottom-[12%] left-[10%] rounded-full border border-border bg-card px-2.5 py-1 font-mono text-[10px] text-muted-foreground"
-        style={
-          { "--float-dur": "5.5s", "--float-delay": "-4s" } as CSSProperties
-        }
-      >
-        agent-01 · testing
-      </span>
-    </div>
-  );
-}
-
 /* ── Page ─────────────────────────────────────────────────── */
 
 export default function HeroSection() {
@@ -323,26 +248,26 @@ export default function HeroSection() {
                 transition={{ duration: 0.5, ease: easeOut }}
               >
                 <Link
-                  className="group mx-auto flex w-fit items-center gap-4 rounded-full border border-border bg-card p-1 pl-4 shadow-black/30 shadow-lg transition-colors duration-300 hover:border-primary/40 hover:bg-secondary"
+                  className="group inline-flex items-center gap-3.5 rounded-full border border-border/80 bg-background/60 py-1.5 pl-4 pr-2 text-sm font-medium backdrop-blur-md shadow-sm transition-all duration-300 hover:border-primary/50 hover:bg-accent/40 hover:shadow-md hover:shadow-primary/10"
                   href={siteConfig.links.releases}
                   rel="noopener noreferrer"
                   target="_blank"
                 >
-                  <span className="text-foreground/80 text-sm">
+                  <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">
+                    <span className="relative flex size-1.5">
+                      <span className="absolute inline-flex size-full animate-ping rounded-full bg-primary opacity-75" />
+                      <span className="relative inline-flex size-1.5 rounded-full bg-primary" />
+                    </span>
+                    Release
+                  </span>
+                  <span className="text-foreground/90 font-medium tracking-tight">
                     {latestTag
-                      ? `${siteConfig.name} v${latestTag} Released`
+                      ? `${siteConfig.name} v${latestTag}`
                       : `${siteConfig.name} is live`}
                   </span>
-                  <span className="block h-4 w-0.5 border-border border-l" />
-                  <div className="size-6 overflow-hidden rounded-full bg-background duration-500 group-hover:bg-muted">
-                    <div className="flex w-12 -translate-x-1/2 duration-500 ease-in-out group-hover:translate-x-0">
-                      <span className="flex size-6">
-                        <ArrowRight className="m-auto size-3" />
-                      </span>
-                      <span className="flex size-6">
-                        <ArrowRight className="m-auto size-3" />
-                      </span>
-                    </div>
+                  <span className="h-4 w-px bg-border/80" />
+                  <div className="flex size-7 items-center justify-center rounded-full bg-muted/80 text-foreground transition-all duration-300 group-hover:bg-primary group-hover:text-primary-foreground">
+                    <ArrowRight className="size-3.5 transition-transform duration-300 group-hover:translate-x-0.5" />
                   </div>
                 </Link>
               </motion.div>
@@ -593,9 +518,14 @@ export default function HeroSection() {
               </CtaLink>
             </Reveal>
           </div>
-          <Reveal direction="up" duration={350} offset={36}>
-            <SwarmOrbit />
-          </Reveal>
+          <div className="w-full">
+            <Terminal
+              lines={_TERMINAL_LINES}
+              shell="swarm session"
+              title="hyperion-agent-swarm"
+              typing={true}
+            />
+          </div>
         </div>
       </section>
 

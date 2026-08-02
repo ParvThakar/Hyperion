@@ -100,7 +100,7 @@ export default function AboutPage() {
             className="mt-3 font-display text-4xl text-foreground tracking-tighter md:text-6xl"
             variants={revealVariants}
           >
-            We're building the workspace where software builds itself.
+            Workspace where software builds itself.
           </motion.h1>
           <motion.p
             className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground"
