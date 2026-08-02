@@ -83,10 +83,6 @@ export function HyperionNav() {
                 src="/main_logo.png"
                 width={48}
               />
-              <span
-                aria-hidden={true}
-                className="absolute -bottom-1.5 left-0 h-px w-full origin-left scale-x-0 bg-gradient-to-r from-primary/70 to-transparent transition-transform duration-500 ease-out group-hover/logo:scale-x-100"
-              />
             </Link>
 
             {/* Desktop */}
