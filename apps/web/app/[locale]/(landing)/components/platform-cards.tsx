@@ -132,26 +132,41 @@ export default function PlatformCards({
           </div>
         </Reveal>
         <div className="mx-auto mt-8 flex flex-wrap items-stretch justify-center gap-5 md:mt-16">
-          {platformCards.map((platform, i) => (
-            <Reveal
-              className="h-full"
-              direction="up"
-              duration={350}
-              index={i}
-              key={platform.name}
-              offset={32}
-            >
-              <PlatformCard
-                assets={assets}
-                platform={platform}
-                recommended={
-                  !!detectedPlatform &&
-                  detectedPlatform !== "unknown" &&
-                  platform.matchKey === detectedPlatform
-                }
-              />
-            </Reveal>
-          ))}
+          {(() => {
+            // Find recommended active index (defaults to Windows / index 0)
+            const recIndex = platformCards.findIndex(
+              (p) =>
+                !!detectedPlatform &&
+                detectedPlatform !== "unknown" &&
+                p.matchKey === detectedPlatform
+            );
+            const activeIdx = recIndex !== -1 ? recIndex : 0;
+
+            // Put active card in middle (1), non-active cards on left (0) and right (2)
+            const otherCards = platformCards.filter((_, idx) => idx !== activeIdx);
+            const orderedCards = [
+              { data: otherCards[0]!, isRecommended: false },
+              { data: platformCards[activeIdx]!, isRecommended: true },
+              { data: otherCards[1]!, isRecommended: false },
+            ];
+
+            return orderedCards.map((item, i) => (
+              <Reveal
+                className="h-full"
+                direction="up"
+                duration={350}
+                index={i}
+                key={item.data.name}
+                offset={32}
+              >
+                <PlatformCard
+                  assets={assets}
+                  platform={item.data}
+                  recommended={item.isRecommended}
+                />
+              </Reveal>
+            ));
+          })()}
         </div>
       </div>
     </section>
