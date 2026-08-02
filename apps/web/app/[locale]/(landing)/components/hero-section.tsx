@@ -30,7 +30,6 @@ import {
 } from "motion/react";
 import Image from "next/image";
 import Link from "next/link";
-import type { CSSProperties } from "react";
 import { useEffect, useRef, useState } from "react";
 import { HeroBackdrop } from "./hero-backdrop";
 import { CtaLink, Eyebrow, GlowCard } from "./marketing-kit";
@@ -249,26 +248,26 @@ export default function HeroSection() {
                 transition={{ duration: 0.5, ease: easeOut }}
               >
                 <Link
-                  className="group mx-auto flex w-fit items-center gap-4 rounded-full border border-border bg-card p-1 pl-4 shadow-black/30 shadow-lg transition-colors duration-300 hover:border-primary/40 hover:bg-secondary"
+                  className="group inline-flex items-center gap-3.5 rounded-full border border-border/80 bg-background/60 py-1.5 pl-4 pr-2 text-sm font-medium backdrop-blur-md shadow-sm transition-all duration-300 hover:border-primary/50 hover:bg-accent/40 hover:shadow-md hover:shadow-primary/10"
                   href={siteConfig.links.releases}
                   rel="noopener noreferrer"
                   target="_blank"
                 >
-                  <span className="text-foreground/80 text-sm">
+                  <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">
+                    <span className="relative flex size-1.5">
+                      <span className="absolute inline-flex size-full animate-ping rounded-full bg-primary opacity-75" />
+                      <span className="relative inline-flex size-1.5 rounded-full bg-primary" />
+                    </span>
+                    Release
+                  </span>
+                  <span className="text-foreground/90 font-medium tracking-tight">
                     {latestTag
-                      ? `${siteConfig.name} v${latestTag} Released`
+                      ? `${siteConfig.name} v${latestTag}`
                       : `${siteConfig.name} is live`}
                   </span>
-                  <span className="block h-4 w-0.5 border-border border-l" />
-                  <div className="size-6 overflow-hidden rounded-full bg-background duration-500 group-hover:bg-muted">
-                    <div className="flex w-12 -translate-x-1/2 duration-500 ease-in-out group-hover:translate-x-0">
-                      <span className="flex size-6">
-                        <ArrowRight className="m-auto size-3" />
-                      </span>
-                      <span className="flex size-6">
-                        <ArrowRight className="m-auto size-3" />
-                      </span>
-                    </div>
+                  <span className="h-4 w-px bg-border/80" />
+                  <div className="flex size-7 items-center justify-center rounded-full bg-muted/80 text-foreground transition-all duration-300 group-hover:bg-primary group-hover:text-primary-foreground">
+                    <ArrowRight className="size-3.5 transition-transform duration-300 group-hover:translate-x-0.5" />
                   </div>
                 </Link>
               </motion.div>
