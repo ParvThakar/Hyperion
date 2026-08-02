@@ -35,7 +35,7 @@ import { useEffect, useRef, useState } from "react";
 import { HeroBackdrop } from "./hero-backdrop";
 import { CtaLink, Eyebrow, GlowCard } from "./marketing-kit";
 import { easeOut, Marquee } from "./motion-primitives";
-import type { TerminalLineInput } from "./terminal";
+import { Terminal, type TerminalLineInput } from "./terminal";
 
 /* ── Copy ─────────────────────────────────────────────────── */
 
@@ -190,80 +190,6 @@ function AgentTicker() {
           {TICKER_MESSAGES[index]}
         </motion.span>
       </AnimatePresence>
-    </div>
-  );
-}
-
-/** Concentric orbit rings with accent dots circling a pulsing core —
- *  the swarm, abstracted. Pure CSS rotation, transform-only. */
-function SwarmOrbit() {
-  const rings = [
-    { size: "38%", dur: "14s", dots: 1, reverse: false },
-    { size: "64%", dur: "22s", dots: 2, reverse: true },
-    { size: "90%", dur: "32s", dots: 3, reverse: false },
-  ];
-
-  return (
-    <div className="relative mx-auto flex aspect-square w-full max-w-md items-center justify-center">
-      {rings.map((ring) => (
-        <div
-          className="absolute rounded-full border border-border/70"
-          key={ring.size}
-          style={{ width: ring.size, height: ring.size }}
-        >
-          <div
-            className={cn(
-              "landing-orbit absolute inset-0",
-              ring.reverse && "landing-orbit-reverse"
-            )}
-            style={{ "--orbit-dur": ring.dur } as CSSProperties}
-          >
-            {Array.from({ length: ring.dots }).map((_, di) => (
-              <div
-                className="absolute inset-0"
-                // biome-ignore lint/suspicious/noArrayIndexKey: static decorative dots
-                key={di}
-                style={{ transform: `rotate(${(360 / ring.dots) * di}deg)` }}
-              >
-                <span className="absolute top-0 left-1/2 size-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary shadow-[0_0_12px_2px] shadow-primary/50" />
-              </div>
-            ))}
-          </div>
-        </div>
-      ))}
-
-      {/* Core */}
-      <div className="relative flex size-16 items-center justify-center rounded-2xl border border-primary/40 bg-secondary shadow-[0_0_40px_-8px] shadow-primary/40">
-        <Bot className="size-7 text-primary" />
-        <span
-          aria-hidden={true}
-          className="landing-glow-breathe absolute inset-0 -z-10 rounded-2xl bg-primary/20 blur-xl"
-        />
-      </div>
-
-      {/* Floating agent chips */}
-      <span
-        className="landing-float absolute top-[16%] left-[4%] rounded-full border border-border bg-card px-2.5 py-1 font-mono text-[10px] text-muted-foreground"
-        style={{ "--float-dur": "6s" } as CSSProperties}
-      >
-        agent-02 · coding
-      </span>
-      <span
-        className="landing-float absolute top-[42%] right-[2%] rounded-full border border-border bg-card px-2.5 py-1 font-mono text-[10px] text-muted-foreground"
-        style={
-          { "--float-dur": "7s", "--float-delay": "-2.5s" } as CSSProperties
-        }
-      >
-        agent-04 · reviewing
-      </span>
-      <span
-        className="landing-float absolute bottom-[12%] left-[10%] rounded-full border border-border bg-card px-2.5 py-1 font-mono text-[10px] text-muted-foreground"
-        style={
-          { "--float-dur": "5.5s", "--float-delay": "-4s" } as CSSProperties
-        }
-      >
-        agent-01 · testing
-      </span>
     </div>
   );
 }
@@ -593,9 +519,14 @@ export default function HeroSection() {
               </CtaLink>
             </Reveal>
           </div>
-          <Reveal direction="up" duration={350} offset={36}>
-            <SwarmOrbit />
-          </Reveal>
+          <div className="w-full">
+            <Terminal
+              lines={_TERMINAL_LINES}
+              shell="swarm session"
+              title="hyperion-agent-swarm"
+              typing={true}
+            />
+          </div>
         </div>
       </section>
 

@@ -213,14 +213,13 @@ export default function DownloadContent({ release }: DownloadContentProps) {
             <div className="text-center">
               <Eyebrow className="justify-center">Prefer the terminal?</Eyebrow>
               <h2 className="mt-3 text-balance font-display font-semibold text-3xl tracking-tight md:text-4xl">
-                Install in one line
+                One-line install (Linux / macOS)
               </h2>
             </div>
           </Reveal>
           <Reveal direction="up" duration={280} index={1}>
             <div className="mt-8 flex flex-col items-center gap-3">
-              <CommandBar command="npm install -g @hyperion/cli" />
-              <CommandBar command="npx hyperion init" />
+              <CommandBar command="curl -fsSL https://hyperion.dev/install.sh | bash" />
             </div>
           </Reveal>
         </div>

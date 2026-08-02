@@ -6,6 +6,7 @@
       "@/*": ["./*"],
       "@workspace/ui/*": ["../../packages/ui/src/*"],
       "@workspace/core/*": ["../../packages/core/src/*"],
+      "@workspace/i18n/*": ["../../packages/i18n/src/*"],
       "fumadocs-mdx:collections/*": [".source/*"]
     },
     "plugins": [

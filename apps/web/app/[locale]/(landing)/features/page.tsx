@@ -25,7 +25,6 @@ import {
   revealVariants,
   staggerContainer,
 } from "../components/motion-primitives";
-import { ParallaxField } from "../components/parallax-field";
 import { Terminal, type TerminalLineInput } from "../components/terminal";
 
 /* ── Feature grid — every capability, one card each ───────── */
@@ -147,7 +146,6 @@ const DEMO_LINES: TerminalLineInput[] = [
 export default function FeaturesPage() {
   return (
     <div className="relative">
-      <ParallaxField />
       <FeaturesBackdrop />
 
       {/* Hero */}
@@ -202,15 +200,12 @@ export default function FeaturesPage() {
           <div className="text-center">
             <Eyebrow className="justify-center">The full surface</Eyebrow>
             <h2 className="mt-3 text-balance font-display font-semibold text-3xl tracking-tight md:text-4xl">
-              Twelve capabilities. Zero context switching.
+              Every capability. Zero context switching.
             </h2>
           </div>
         </Reveal>
         <MagicBentoGrid className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {features.map((feature, i) => {
-            // Bento mosaic (lg+ only): the flagship first tile is a
-            // large 2x2 cell; the remaining eight stay standard size,
-            // filling out a clean 4-row x 3-col grid with no gaps.
             const isHero = i === 0;
             return (
               <Reveal
@@ -221,42 +216,48 @@ export default function FeaturesPage() {
                 key={feature.title}
               >
                 <MagicBentoCard
-                  className={cn("flex h-full flex-col p-6", isHero && "lg:p-8")}
+                  className={cn(
+                    "flex h-full flex-col justify-between p-6 transition-all duration-300",
+                    isHero && "lg:p-8"
+                  )}
                   enableMagnetism={false}
                 >
-                  <div
-                    className={cn(
-                      "flex items-center justify-center rounded-xl border border-border bg-secondary transition-colors duration-300 group-hover/card:border-primary/40",
-                      isHero ? "size-14" : "size-11"
-                    )}
-                  >
-                    <feature.icon
+                  <div>
+                    <div
                       className={cn(
-                        "text-primary transition-transform duration-300 ease-out group-hover/card:-rotate-3 group-hover/card:scale-110",
-                        isHero ? "size-6" : "size-5"
+                        "flex items-center justify-center rounded-xl border border-border/80 bg-secondary/60 transition-colors duration-300 group-hover/card:border-primary/40 group-hover/card:bg-secondary",
+                        isHero ? "size-13" : "size-10"
                       )}
-                    />
+                    >
+                      <feature.icon
+                        className={cn(
+                          "text-primary transition-transform duration-300 ease-out group-hover/card:-rotate-3 group-hover/card:scale-105",
+                          isHero ? "size-6" : "size-4.5"
+                        )}
+                      />
+                    </div>
+                    <h3
+                      className={cn(
+                        "mt-5 font-medium text-foreground tracking-tight",
+                        isHero ? "text-xl md:text-2xl" : "text-base"
+                      )}
+                    >
+                      {feature.title}
+                    </h3>
+                    <p className="mt-2 text-muted-foreground text-sm leading-relaxed">
+                      {feature.description}
+                    </p>
                   </div>
-                  <h3
-                    className={cn(
-                      "mt-4 font-medium text-foreground",
-                      isHero && "text-lg"
-                    )}
-                  >
-                    {feature.title}
-                  </h3>
-                  <p className="mt-2 text-muted-foreground text-sm leading-relaxed">
-                    {feature.description}
-                  </p>
+
                   {isHero && (
-                    <div className="mt-6 grid grid-cols-2 gap-2">
+                    <div className="mt-8 grid grid-cols-2 gap-2.5">
                       {SWARM_TILES.map((tile) => (
                         <div
-                          className="flex items-center gap-2 rounded-lg border border-border/60 bg-background/40 px-3 py-2.5"
+                          className="flex items-center gap-2.5 rounded-lg border border-border/50 bg-background/30 px-3 py-2.5 backdrop-blur-xs transition-colors duration-200 hover:border-primary/30"
                           key={tile.label}
                         >
                           <tile.icon className="size-3.5 shrink-0 text-muted-foreground" />
-                          <span className="truncate text-muted-foreground text-xs">
+                          <span className="truncate font-mono text-muted-foreground text-xs">
                             {tile.label}
                           </span>
                         </div>

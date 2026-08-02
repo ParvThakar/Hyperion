@@ -3,6 +3,7 @@ import { GradientBand } from "./components/gradient-band";
 import { HyperionFooter } from "./components/hyperion-footer";
 import { HyperionNav } from "./components/hyperion-nav";
 import { ScrollProgress } from "./components/marketing-kit";
+import { PageTransition } from "./components/page-transition";
 
 interface LandingLayoutProps {
   children: React.ReactNode;
@@ -25,7 +26,9 @@ export default function LandingLayout({ children }: LandingLayoutProps) {
       <div className="landing-theme flex min-h-screen flex-col overflow-x-clip bg-background text-foreground">
         <ScrollProgress />
         <HyperionNav />
-        <main className="flex-1">{children}</main>
+        <main className="flex-1">
+          <PageTransition>{children}</PageTransition>
+        </main>
         <GradientBand variant="full" />
         <HyperionFooter />
       </div>
