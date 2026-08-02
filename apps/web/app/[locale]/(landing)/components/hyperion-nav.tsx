@@ -6,6 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { CtaLink } from "./marketing-kit";
 
 const navLinks = [
   { label: "Features", href: "/features" },
@@ -113,55 +114,9 @@ export function HyperionNav() {
             </ul>
 
             <div className="hidden items-center gap-4 lg:flex">
-              <Link
-                className="group/btn relative inline-flex h-8 items-center justify-center rounded-xl bg-primary px-4 font-medium text-primary-foreground text-sm transition-all duration-300 active:scale-[0.98]"
-                href="/download"
-              >
+              <CtaLink className="h-8 rounded-xl px-4 text-sm" href="/download">
                 Download
-                <svg
-                  className="pointer-events-none absolute inset-0 h-full w-full"
-                  fill="none"
-                >
-                  <defs>
-                    <linearGradient
-                      id="shiny-gold-desktop"
-                      x1="0%"
-                      x2="0%"
-                      y1="0%"
-                      y2="100%"
-                    >
-                      <stop offset="0%" stopColor="#FFFFFF" />
-                      <stop offset="25%" stopColor="#FDE047" />
-                      <stop offset="65%" stopColor="#D4AF37" />
-                      <stop offset="100%" stopColor="#854D0E" />
-                    </linearGradient>
-                  </defs>
-                  <rect
-                    className="transition-[stroke-dasharray] duration-500 ease-out [stroke-dasharray:0_100] [stroke-dashoffset:-12.5] group-hover/btn:[stroke-dasharray:55_45]"
-                    height="calc(100% - 2px)"
-                    pathLength="100"
-                    rx="12"
-                    ry="12"
-                    stroke="url(#shiny-gold-desktop)"
-                    strokeWidth="1.5"
-                    width="calc(100% - 2px)"
-                    x="1"
-                    y="1"
-                  />
-                  <rect
-                    className="origin-center scale-x-[-1] transition-[stroke-dasharray] duration-500 ease-out [stroke-dasharray:0_100] [stroke-dashoffset:-12.5] group-hover/btn:[stroke-dasharray:55_45]"
-                    height="calc(100% - 2px)"
-                    pathLength="100"
-                    rx="12"
-                    ry="12"
-                    stroke="url(#shiny-gold-desktop)"
-                    strokeWidth="1.5"
-                    width="calc(100% - 2px)"
-                    x="1"
-                    y="1"
-                  />
-                </svg>
-              </Link>
+              </CtaLink>
             </div>
 
             {/* Mobile */}

@@ -65,39 +65,51 @@ function PlatformCard({
   );
 
   return (
-    <GlowCard
-      beam={recommended}
-      className={cn(
-        "relative w-full p-6 text-center sm:w-[258px]",
-        recommended &&
-          "border-primary/40 shadow-[0_0_32px_-14px] shadow-primary/30"
-      )}
-    >
+    <div className="relative pt-3 sm:w-[258px]">
       {recommended && (
-        <Badge
-          className="absolute top-4 left-1/2 -translate-x-1/2"
-          variant="solid"
-        >
-          Your platform
-        </Badge>
+        <div className="absolute top-0 left-1/2 z-20 -translate-x-1/2">
+          <span className="inline-flex items-center rounded-full border border-white/15 bg-[#F5F5F5] px-4 py-1.5 font-medium text-[#111] text-xs shadow-md whitespace-nowrap">
+            Your Platform
+          </span>
+        </div>
       )}
-      <CardDecorator>{platform.icon}</CardDecorator>
-      <h3 className="mt-6 font-medium">{platform.name}</h3>
-      <div className="mt-3 space-y-3">
-        {resolvedDownloads.length > 0 ? (
-          resolvedDownloads.map((dl) => (
-            <DownloadButton
-              ext={dl.ext}
-              href={resolveHref(dl.assetKey, assets)}
-              key={dl.assetKey + dl.label}
-              label={dl.label}
-            />
-          ))
-        ) : (
-          <p className="py-2 text-muted-foreground text-sm">Coming soon</p>
+      <GlowCard
+        beam={recommended}
+        className={cn(
+          "relative flex h-full w-full flex-col items-center justify-between overflow-visible p-6 pt-8 text-center transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-primary/20 hover:shadow-xl",
+          recommended &&
+            "border-primary/40 shadow-[0_0_32px_-14px] shadow-primary/30"
         )}
-      </div>
-    </GlowCard>
+        tilt={false}
+      >
+        <div className="flex w-full flex-col items-center">
+          <CardDecorator>{platform.icon}</CardDecorator>
+          <h3 className="mt-6 font-medium text-foreground text-lg">{platform.name}</h3>
+
+          {/* Coming soon pill for non-active cards or cards without available download links */}
+          {(!recommended || resolvedDownloads.length === 0) && (
+            <div className="mt-4 flex items-center justify-center">
+              <span className="inline-flex items-center rounded-full border border-white/[0.08] bg-white/[0.05] px-3.5 py-1 text-white/65 text-xs backdrop-blur-md">
+                Coming Soon
+              </span>
+            </div>
+          )}
+        </div>
+
+        {resolvedDownloads.length > 0 && (
+          <div className="mt-6 w-full space-y-3">
+            {resolvedDownloads.map((dl) => (
+              <DownloadButton
+                ext={dl.ext}
+                href={resolveHref(dl.assetKey, assets)}
+                key={dl.assetKey + dl.label}
+                label={dl.label}
+              />
+            ))}
+          </div>
+        )}
+      </GlowCard>
+    </div>
   );
 }
 
@@ -122,6 +134,7 @@ export default function PlatformCards({
         <div className="mx-auto mt-8 flex flex-wrap items-stretch justify-center gap-5 md:mt-16">
           {platformCards.map((platform, i) => (
             <Reveal
+              className="h-full"
               direction="up"
               duration={350}
               index={i}
