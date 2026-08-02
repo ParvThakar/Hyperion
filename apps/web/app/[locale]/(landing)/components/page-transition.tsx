@@ -15,11 +15,11 @@ export function PageTransition({ children }: { children: React.ReactNode }) {
     <AnimatePresence initial={false} mode="wait">
       <motion.div
         animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-        exit={{ opacity: 0, y: -25, filter: "blur(4px)" }}
-        initial={{ opacity: 0, y: 35, filter: "blur(4px)" }}
+        exit={{ opacity: 0, y: -40, filter: "blur(6px)" }}
+        initial={{ opacity: 0, y: 50, filter: "blur(6px)" }}
         key={pathname}
         transition={{
-          duration: 0.4,
+          duration: 0.45,
           ease: [0.22, 1, 0.36, 1],
         }}
       >
