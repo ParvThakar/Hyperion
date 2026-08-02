@@ -153,7 +153,7 @@ pnpm deps:check           # Check outdated dependencies
 pnpm deps:update          # Interactively update dependencies
 ```
 
----
+--
 
 ## 🌐 Deployment & Official Links
 
