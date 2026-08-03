@@ -9,6 +9,7 @@ import { ImpactBase } from "../components/impact-platform";
 const devs: Dev[] = [
   {
     initials: "KS",
+    photoUrl: "/team/karm.png",
     name: "Karm Sorathiya",
     role: "Founding Engineer — Frontend Architect",
     bio: "Crafts high-fidelity layouts, micro-animations, and cross-platform native wrapper layouts for web, macOS, and Windows.",
@@ -20,6 +21,7 @@ const devs: Dev[] = [
   },
   {
     initials: "MR",
+    photoUrl: "/team/meghraj.png",
     name: "Meghraj Ravani",
     role: "Founding Engineer — Frontend & 3D Systems",
     bio: "Shapes immersive user experiences, interactive WebGL landing environments, volumetric lighting, and layout aesthetics.",
@@ -31,6 +33,7 @@ const devs: Dev[] = [
   },
   {
     initials: "BR",
+    photoUrl: "/team/bhagirath.png",
     name: "Bhagirathsinh Rana",
     role: "Founding Engineer — Core Engine & DevOps",
     bio: "Maintains containerized virtualization layers, secure sandboxed task execution, and worktree isolation systems.",
@@ -42,6 +45,7 @@ const devs: Dev[] = [
   },
   {
     initials: "MR",
+    photoUrl: "/team/malay.png",
     name: "Malay Raval",
     role: "Founding Engineer — Backend Systems & Terminal",
     bio: "Scales real-time terminal streaming, low-latency WebSocket streaming, and stateful session sync databases.",
@@ -53,6 +57,7 @@ const devs: Dev[] = [
   },
   {
     initials: "PT",
+    photoUrl: "/team/parv.png",
     name: "Parv Thakar",
     role: "Founding Engineer — Design Systems Lead",
     bio: "Packages modular UI primitive packages, type-safe multi-locale translations, and automated code quality gates.",
