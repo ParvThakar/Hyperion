@@ -1,15 +1,16 @@
 "use client";
 
+import { Link } from "@workspace/i18n/navigation";
 import { BorderBeam } from "@workspace/ui/components/landing/border-beam";
 import CountUp from "@workspace/ui/components/marketing/CountUp";
 import { Reveal } from "@workspace/ui/components/marketing/reveal";
 import { StarBorder } from "@workspace/ui/components/marketing/StarBorder";
 import { SpecularButton } from "@workspace/ui/components/specular-button";
 import { cn } from "@workspace/ui/lib/utils";
-import { AlertCircle, Check, Copy, Minus, Plus, Rocket } from "lucide-react";
+import { AlertCircle, Check, Copy, Minus, Plus } from "lucide-react";
 import { motion, useScroll } from "motion/react";
 import type * as React from "react";
-import { useEffect, useId, useRef, useState } from "react";
+import { useId, useRef, useState } from "react";
 import { Terminal } from "./terminal";
 
 /* ─────────────────────────────────────────────────────────────
@@ -250,8 +251,12 @@ export function CtaLink({
   className,
   variant = "primary",
   children,
+  href,
   ...props
-}: React.ComponentProps<"a"> & { variant?: "primary" | "ghost" }) {
+}: Omit<React.ComponentProps<typeof Link>, "href"> & {
+  href?: React.ComponentProps<typeof Link>["href"];
+  variant?: "primary" | "ghost";
+}) {
   // Imperative ref mutation instead of React state — a mousemove only
   // ever touches `transform` directly on the node, never re-renders.
   const ref = useRef<HTMLAnchorElement>(null);
@@ -280,7 +285,8 @@ export function CtaLink({
         tint="#ffffff"
         tintOpacity={0}
       >
-        <a
+        <Link
+          href={href || "/"}
           onMouseLeave={() => {
             if (ref.current) {
               ref.current.style.transform = "";
@@ -299,19 +305,20 @@ export function CtaLink({
           {...props}
         >
           {children}
-        </a>
+        </Link>
       </SpecularButton>
     );
   }
 
   return (
-    <a
+    <Link
       className={cn(
         "inline-flex h-10 items-center justify-center gap-2 rounded-full px-5 font-medium text-sm transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out active:scale-[0.98]",
         "bg-primary text-primary-foreground hover:bg-primary/85 hover:shadow-[0_0_24px_-4px] hover:shadow-primary/40",
         className
       )}
       data-slot="cta-link"
+      href={href || "/"}
       onMouseLeave={() => {
         if (ref.current) {
           ref.current.style.transform = "";
@@ -330,7 +337,7 @@ export function CtaLink({
       {...props}
     >
       {children}
-    </a>
+    </Link>
   );
 }
 

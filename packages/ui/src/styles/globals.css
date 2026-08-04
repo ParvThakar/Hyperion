@@ -332,8 +332,8 @@
 /* Hide default browser scrollbar globally */
 html,
 body {
-  scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* IE and Edge */
 }
 
 html::-webkit-scrollbar,

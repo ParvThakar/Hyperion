@@ -2,6 +2,7 @@
 
 import { siteConfig } from "@workspace/core/config/site";
 import { fetchLatestGithubVersion } from "@workspace/core/lib/utils";
+import { Link } from "@workspace/i18n/navigation";
 import { BorderBeam } from "@workspace/ui/components/landing/border-beam";
 import {
   MagicBentoCard,
@@ -29,7 +30,6 @@ import {
   useTransform,
 } from "motion/react";
 import Image from "next/image";
-import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { HeroBackdrop } from "./hero-backdrop";
 import { CtaLink, Eyebrow, GlowCard } from "./marketing-kit";
@@ -548,6 +548,7 @@ export default function HeroSection() {
                 loop
                 muted
                 playsInline
+                preload="metadata"
                 src="/heroVideo.mp4"
               />
               {/* Solid inner border using box-shadow on desktop/tablet only, leaving mobile clean & 100% visible */}

@@ -15,19 +15,19 @@ export const ScrollStackItem = ({
 );
 
 interface ScrollStackProps {
+  baseScale?: number;
+  blurAmount?: number;
   children: React.ReactNode;
   className?: string;
   itemDistance?: number;
   itemScale?: number;
   itemStackDistance?: number;
-  stackPosition?: string;
-  scaleEndPosition?: string;
-  baseScale?: number;
-  scaleDuration?: number;
-  rotationAmount?: number;
-  blurAmount?: number;
-  useWindowScroll?: boolean;
   onStackComplete?: () => void;
+  rotationAmount?: number;
+  scaleDuration?: number;
+  scaleEndPosition?: string;
+  stackPosition?: string;
+  useWindowScroll?: boolean;
 }
 
 const ScrollStack = ({
@@ -55,8 +55,12 @@ const ScrollStack = ({
 
   const calculateProgress = useCallback(
     (scrollTop: number, start: number, end: number) => {
-      if (scrollTop < start) return 0;
-      if (scrollTop > end) return 1;
+      if (scrollTop < start) {
+        return 0;
+      }
+      if (scrollTop > end) {
+        return 1;
+      }
       return (scrollTop - start) / (end - start);
     },
     []
@@ -65,9 +69,9 @@ const ScrollStack = ({
   const parsePercentage = useCallback(
     (value: string | number, containerHeight: number) => {
       if (typeof value === "string" && value.includes("%")) {
-        return (parseFloat(value) / 100) * containerHeight;
+        return (Number.parseFloat(value) / 100) * containerHeight;
       }
-      return typeof value === "number" ? value : parseFloat(value);
+      return typeof value === "number" ? value : Number.parseFloat(value);
     },
     []
   );
@@ -100,7 +104,9 @@ const ScrollStack = ({
   );
 
   const updateCardTransforms = useCallback(() => {
-    if (!cardsRef.current.length || isUpdatingRef.current) return;
+    if (!cardsRef.current.length || isUpdatingRef.current) {
+      return;
+    }
 
     isUpdatingRef.current = true;
 
@@ -120,7 +126,9 @@ const ScrollStack = ({
       : 0;
 
     cardsRef.current.forEach((card, i) => {
-      if (!card) return;
+      if (!card) {
+        return;
+      }
 
       const cardTop = getElementOffset(card);
       const triggerStart = cardTop - stackPositionPx - itemStackDistance * i;
@@ -142,7 +150,9 @@ const ScrollStack = ({
         let topCardIndex = 0;
         for (let j = 0; j < cardsRef.current.length; j++) {
           const jCard = cardsRef.current[j];
-          if (!jCard) continue;
+          if (!jCard) {
+            continue;
+          }
           const jCardTop = getElementOffset(jCard);
           const jTriggerStart =
             jCardTop - stackPositionPx - itemStackDistance * j;
@@ -229,7 +239,7 @@ const ScrollStack = ({
     if (useWindowScroll) {
       const lenis = new Lenis({
         duration: 1.2,
-        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+        easing: (t) => Math.min(1, 1.001 - 2 ** (-10 * t)),
         smoothWheel: true,
         touchMultiplier: 2,
         infinite: false,
@@ -251,16 +261,19 @@ const ScrollStack = ({
       return lenis;
     }
     const scroller = scrollerRef.current;
-    if (!scroller) return;
+    if (!scroller) {
+      return;
+    }
 
     const contentEl =
-      (scroller.querySelector(".scroll-stack-inner") as HTMLElement) ?? undefined;
+      (scroller.querySelector(".scroll-stack-inner") as HTMLElement) ??
+      undefined;
 
     const lenis = new Lenis({
       wrapper: scroller,
       content: contentEl,
       duration: 1.2,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      easing: (t) => Math.min(1, 1.001 - 2 ** (-10 * t)),
       smoothWheel: true,
       touchMultiplier: 2,
       infinite: false,
@@ -285,7 +298,9 @@ const ScrollStack = ({
 
   useLayoutEffect(() => {
     const scroller = scrollerRef.current;
-    if (!scroller && !useWindowScroll) return;
+    if (!(scroller || useWindowScroll)) {
+      return;
+    }
 
     const cards = Array.from(
       useWindowScroll
