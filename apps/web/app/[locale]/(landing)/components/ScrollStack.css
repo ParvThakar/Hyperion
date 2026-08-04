@@ -13,8 +13,8 @@
 }
 
 .scroll-stack-inner {
-  padding: 5rem 1rem 20rem;
   min-height: 100vh;
+  padding: 5rem 1rem 20rem;
 }
 
 .scroll-stack-card-wrapper {
@@ -22,16 +22,16 @@
 }
 
 .scroll-stack-card {
-  transform-origin: top center;
-  will-change: transform, filter;
-  backface-visibility: hidden;
-  transform-style: preserve-3d;
+  position: relative;
+  box-sizing: border-box;
   width: 100%;
   margin: 30px 0;
-  box-sizing: border-box;
   -webkit-transform: translateZ(0);
   transform: translateZ(0);
-  position: relative;
+  transform-origin: top center;
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  will-change: transform, filter;
 }
 
 .scroll-stack-end {
