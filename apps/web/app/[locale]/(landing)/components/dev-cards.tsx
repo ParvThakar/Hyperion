@@ -22,22 +22,16 @@ export interface Dev {
 }
 
 /** Shared avatar — photo when provided, initials disc otherwise. */
-function DevAvatar({
-  className,
-  dev,
-}: {
-  className?: string;
-  dev: Dev;
-}) {
+function DevAvatar({ className, dev }: { className?: string; dev: Dev }) {
   if (dev.photoUrl) {
     return (
       <img
-        src={dev.photoUrl}
         alt={dev.name}
         className={cn(
           "h-48 w-auto object-contain drop-shadow-[0_0_30px_rgba(255,255,255,0.15)]",
           className
         )}
+        src={dev.photoUrl}
       />
     );
   }
@@ -94,9 +88,9 @@ function DevCard({
       >
         {dev.photoUrl ? (
           <img
-            src={dev.photoUrl}
             alt={dev.name}
             className="h-[460px] w-auto object-contain opacity-60 grayscale brightness-110 transition-all duration-300 group-hover/devcard:opacity-0"
+            src={dev.photoUrl}
           />
         ) : (
           <span className="font-display text-8xl text-foreground/[0.18]">
@@ -112,10 +106,7 @@ function DevCard({
 
       {/* revealed identity — fade, lift, and un-blur together */}
       <div className="relative flex translate-y-3 flex-col items-center px-6 opacity-0 blur-[3px] transition-all duration-200 ease-out group-hover/devcard:translate-y-0 group-hover/devcard:opacity-100 group-hover/devcard:blur-none group-focus-visible/devcard:translate-y-0 group-focus-visible/devcard:opacity-100 group-focus-visible/devcard:blur-none">
-        <DevAvatar
-          className="border-primary/30"
-          dev={dev}
-        />
+        <DevAvatar className="border-primary/30" dev={dev} />
         <p className="mt-4 font-medium text-foreground text-sm">{dev.name}</p>
         <p className="mt-1 text-muted-foreground text-xs">{dev.role}</p>
         <p className="mt-3 hidden max-w-[15rem] text-[0.7rem] text-muted-foreground/70 leading-relaxed sm:block">
