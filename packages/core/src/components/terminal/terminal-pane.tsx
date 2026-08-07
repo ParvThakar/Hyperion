@@ -370,6 +370,8 @@ export function TerminalPane({
   const containerRef = useRef<HTMLDivElement>(null);
   const termRef = useRef<TerminalInstance>(null);
   const fitAddonRef = useRef<FitAddonInstance>(null);
+  const resizeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastFitWidthRef = useRef<number>(0);
   const [shellType, setShellType] = useState("Local Shell");
   const [isTauriEnv, setIsTauriEnv] = useState(false);
   const [isTerminalReady, setIsTerminalReady] = useState(false);
@@ -752,14 +754,34 @@ export function TerminalPane({
         ) {
           return; // Skip resize logic if container is hidden/0px
         }
-        requestAnimationFrame(() => {
-          if (
-            !disposed &&
-            fitAddonRef.current &&
-            containerRef.current &&
-            containerRef.current.clientWidth > 0
-          ) {
+
+        // Debounce fit() calls during animated layout shifts (sidebar / agent panel transitions).
+        // This prevents xterm.js from recalculating line wraps on every 16ms frame,
+        // eliminating text jump, cursor flicker, and reflow lag.
+        if (resizeTimerRef.current) {
+          clearTimeout(resizeTimerRef.current);
+        }
+
+        resizeTimerRef.current = setTimeout(() => {
+          requestAnimationFrame(() => {
+            if (
+              disposed ||
+              !fitAddonRef.current ||
+              !containerRef.current ||
+              containerRef.current.clientWidth === 0
+            ) {
+              return;
+            }
+
+            const currentWidth = containerRef.current.clientWidth;
+            // Ignore small sub-character width shifts (< 8px)
+            if (Math.abs(currentWidth - lastFitWidthRef.current) < 8) {
+              return;
+            }
+
+            lastFitWidthRef.current = currentWidth;
             fitAddonRef.current.fit();
+
             if (termRef.current) {
               const cols = termRef.current.cols;
               const rows = termRef.current.rows;
@@ -767,8 +789,8 @@ export function TerminalPane({
                 resizePty(cols, rows);
               }
             }
-          }
-        });
+          });
+        }, 150);
       });
 
       if (containerRef.current) {
@@ -796,6 +818,9 @@ export function TerminalPane({
 
     return () => {
       disposed = true;
+      if (resizeTimerRef.current) {
+        clearTimeout(resizeTimerRef.current);
+      }
       observer?.disconnect();
       termRef.current?.dispose();
       termRef.current = null;
