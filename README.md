@@ -386,7 +386,7 @@ packages/
 - [ ] Plugin system for custom agents
 - [ ] Import/export workspaces
 
----
+--
 
 ## Contributing
 
