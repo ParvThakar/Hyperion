@@ -19,7 +19,6 @@ export function AeonConsole({
     return null;
   }
 
-  const _designation = `${activeDev.initials}-${String(activeIndex + 1).padStart(2, "0")}`;
 
   return (
     <div className="relative z-30 flex w-full flex-col items-center gap-6 px-4 pb-12 sm:pb-16">
@@ -70,12 +69,14 @@ export function AeonConsole({
       <div className="mt-8 flex w-full max-w-3xl flex-wrap justify-center gap-2 sm:gap-4">
         {devs.map((dev, i) => {
           const isSelected = i === activeIndex;
+          const isBackRow = i === 0 || i === 2;
           const agentId = `${dev.initials}-${String(i + 1).padStart(2, "0")}`;
+          const rowTag = isBackRow ? "ROW 2" : "ROW 1";
 
           return (
             <button
               className={cn(
-                "group relative flex flex-col items-center justify-center gap-2 overflow-hidden rounded-md border px-4 py-3 transition-all duration-300 sm:px-6 sm:py-4",
+                "group relative flex flex-col items-center justify-center gap-1.5 overflow-hidden rounded-md border px-4 py-2.5 transition-all duration-300 sm:px-5 sm:py-3.5",
                 isSelected
                   ? "border-white/20 bg-white/[0.03] shadow-[0_0_20px_rgba(255,255,255,0.05)]"
                   : "border-white/[0.05] bg-transparent hover:border-white/15 hover:bg-white/[0.02]"
@@ -91,13 +92,13 @@ export function AeonConsole({
 
               <span
                 className={cn(
-                  "font-mono text-[0.5rem] tracking-[0.3em] transition-colors duration-300 sm:text-[0.55rem]",
+                  "font-mono text-[0.45rem] tracking-[0.25em] transition-colors duration-300 sm:text-[0.5rem] uppercase",
                   isSelected
                     ? "text-emerald-400"
                     : "text-white/20 group-hover:text-white/40"
                 )}
               >
-                {isSelected ? "ACTIVE" : "STANDBY"}
+                {isSelected ? "ACTIVE" : rowTag}
               </span>
 
               <span
