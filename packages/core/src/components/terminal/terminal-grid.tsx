@@ -4,6 +4,7 @@ import { TerminalPane } from "@workspace/core/components/terminal/terminal-pane"
 import { useMounted } from "@workspace/core/hooks/use-mounted";
 import { useWorkspaceStore } from "@workspace/core/stores/workspace-store";
 import { cn } from "@workspace/ui/lib/utils";
+import { AnimatePresence, motion } from "motion/react";
 
 function getGridClass(count: number): string {
   switch (count) {
@@ -12,7 +13,7 @@ function getGridClass(count: number): string {
     case 2:
       return "grid-cols-2 grid-rows-1";
     case 3:
-      return "grid-cols-3 grid-rows-1";
+      return "grid-cols-2 grid-rows-2"; // 2x2 grid with 3rd pane spanning 2 cols
     case 4:
       return "grid-cols-2 grid-rows-2";
     case 5:
@@ -29,6 +30,9 @@ function getGridClass(count: number): string {
 }
 
 function getPaneClass(totalCount: number, index: number): string {
+  if (totalCount === 3) {
+    return index === 2 ? "col-span-2" : "col-span-1";
+  }
   if (totalCount === 5) {
     return index < 3 ? "col-span-2" : "col-span-3";
   }
@@ -81,26 +85,41 @@ export function TerminalGrid() {
               display: isActive ? "grid" : "none",
             }}
           >
-            {ws.panes.map((pane, index) => (
-              <div
-                className={cn(
-                  "h-full w-full",
-                  getPaneClass(ws.panes.length, index)
-                )}
-                key={pane.id}
-              >
-                <TerminalPane
-                  autoCommand={ws.autoCommand}
-                  cwd={ws.directory}
-                  directory={ws.directory}
-                  id={pane.id}
-                  index={index}
-                  isActiveWorkspace={isActive}
-                  name={pane.name}
-                  title={`Terminal ${index + 1}`}
-                />
-              </div>
-            ))}
+            <AnimatePresence mode="popLayout">
+              {ws.panes.map((pane, index) => (
+                <motion.div
+                  animate={{ opacity: 1, scale: 1 }}
+                  className={cn(
+                    "h-full w-full",
+                    getPaneClass(ws.panes.length, index)
+                  )}
+                  exit={{
+                    opacity: 0,
+                    scale: 0.95,
+                    transition: { duration: 0.15 },
+                  }}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  key={pane.id}
+                  layout
+                  transition={{
+                    layout: { type: "spring", stiffness: 300, damping: 28 },
+                    opacity: { duration: 0.2 },
+                    scale: { duration: 0.2 },
+                  }}
+                >
+                  <TerminalPane
+                    autoCommand={ws.autoCommand}
+                    cwd={ws.directory}
+                    directory={ws.directory}
+                    id={pane.id}
+                    index={index}
+                    isActiveWorkspace={isActive}
+                    name={pane.name}
+                    title={`Terminal ${index + 1}`}
+                  />
+                </motion.div>
+              ))}
+            </AnimatePresence>
           </div>
         );
       })}

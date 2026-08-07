@@ -1,5 +1,6 @@
 "use client";
 
+import { terminalRegistry } from "@workspace/core/lib/terminal-registry";
 import { safeUUID } from "@workspace/core/lib/uuid";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
@@ -50,6 +51,7 @@ export interface Workspace {
 }
 
 interface WorkspaceState {
+  activePaneIds: Record<string, string>;
   activeWorkspaceId: string | null;
   createWorkspace: (
     name: string,
@@ -57,10 +59,12 @@ interface WorkspaceState {
     directory?: string,
     autoCommand?: string
   ) => Workspace;
+  deleteTerminalPane: (workspaceId: string, paneId: string) => void;
   deleteWorkspace: (id: string) => void;
   duplicateWorkspace: (id: string) => void;
   recentDirectories: string[];
   renameWorkspace: (id: string, name: string) => void;
+  setActivePane: (workspaceId: string, paneId: string) => void;
   setActiveWorkspace: (id: string) => void;
   togglePinWorkspace: (id: string) => void;
   workspaces: Workspace[];
@@ -84,6 +88,7 @@ export const useWorkspaceStore = create<WorkspaceState>()(
   persist(
     (set) => ({
       activeWorkspaceId: null,
+      activePaneIds: {},
       workspaces: [],
       recentDirectories: [],
       createWorkspace: (
@@ -112,13 +117,84 @@ export const useWorkspaceStore = create<WorkspaceState>()(
               ...currentRecent.filter((d) => d !== directory),
             ].slice(0, 5);
           }
+          const firstPaneId = workspace.panes[0]?.id;
           return {
             activeWorkspaceId: workspace.id,
+            activePaneIds: firstPaneId
+              ? { ...state.activePaneIds, [workspace.id]: firstPaneId }
+              : state.activePaneIds,
             workspaces: [...state.workspaces, workspace],
             recentDirectories: updatedRecent,
           };
         });
         return workspace;
+      },
+      deleteTerminalPane: (workspaceId: string, paneId: string) => {
+        let resultNextActivePaneId: string | undefined;
+
+        set((state) => {
+          const workspace = state.workspaces.find((w) => w.id === workspaceId);
+          if (!workspace || workspace.panes.length <= 1) {
+            return state;
+          }
+
+          const targetIndex = workspace.panes.findIndex((p) => p.id === paneId);
+          if (targetIndex === -1) {
+            return state;
+          }
+
+          const newPanes = workspace.panes
+            .filter((p) => p.id !== paneId)
+            .map((p, idx) => ({
+              ...p,
+              title: `Terminal ${idx + 1}`,
+            }));
+
+          // Determine next active terminal pane
+          const currentActiveId = state.activePaneIds[workspaceId];
+          let nextActiveId = currentActiveId;
+
+          if (currentActiveId === paneId || !currentActiveId) {
+            // Priority: Next terminal if available, otherwise Previous terminal
+            const nextPane =
+              newPanes[targetIndex] || newPanes[targetIndex - 1] || newPanes[0];
+            nextActiveId = nextPane?.id;
+          }
+
+          resultNextActivePaneId = nextActiveId;
+
+          // Close backend PTY process for deleted terminal
+          import("@tauri-apps/api/core")
+            .then(({ isTauri, invoke }) => {
+              if (isTauri()) {
+                invoke("close_terminal", { id: paneId }).catch(() => {
+                  /* ignore */
+                });
+              }
+            })
+            .catch(() => {
+              /* ignore */
+            });
+
+          return {
+            activePaneIds: nextActiveId
+              ? { ...state.activePaneIds, [workspaceId]: nextActiveId }
+              : state.activePaneIds,
+            workspaces: state.workspaces.map((w) =>
+              w.id === workspaceId
+                ? { ...w, panes: newPanes, terminalCount: newPanes.length }
+                : w
+            ),
+          };
+        });
+
+        // Automatically move focus and cursor to the next active terminal
+        if (resultNextActivePaneId) {
+          const targetId = resultNextActivePaneId;
+          setTimeout(() => {
+            terminalRegistry.focusTerminal(targetId);
+          }, 60);
+        }
       },
       deleteWorkspace: (id: string) => {
         set((state) => {
@@ -174,6 +250,11 @@ export const useWorkspaceStore = create<WorkspaceState>()(
           workspaces: state.workspaces.map((w) =>
             w.id === id ? { ...w, name } : w
           ),
+        }));
+      },
+      setActivePane: (workspaceId: string, paneId: string) => {
+        set((state) => ({
+          activePaneIds: { ...state.activePaneIds, [workspaceId]: paneId },
         }));
       },
       setActiveWorkspace: (id: string) => {

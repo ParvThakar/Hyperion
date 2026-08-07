@@ -1,6 +1,7 @@
 "use client";
 
 import { hotkeys } from "@workspace/core/config/hotkeys";
+import { useTerminalHotkeys } from "@workspace/core/hooks/use-terminal-hotkeys";
 import { useCommandPaletteStore } from "@workspace/core/stores/command-palette-store";
 import { useHotkeysDialogStore } from "@workspace/core/stores/hotkeys-store";
 import { useSidebar } from "@workspace/ui/components/sidebar";
@@ -14,6 +15,9 @@ export function useAppHotkeys({ navigate }: UseAppHotkeysOptions) {
   const { toggleSidebar } = useSidebar();
   const toggleHotkeysDialog = useHotkeysDialogStore((s) => s.toggle);
   const toggleCommandPalette = useCommandPaletteStore((s) => s.toggle);
+
+  // Terminal Switching Hotkeys (Ctrl/Cmd + 1..8)
+  useTerminalHotkeys();
 
   const getKeys = (id: string) => hotkeys.find((h) => h.id === id)?.keys || "";
 

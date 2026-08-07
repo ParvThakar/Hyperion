@@ -31,6 +31,12 @@ export const hotkeys: HotkeyDefinition[] = [
     category: "navigation",
   },
   {
+    id: "switch-terminal",
+    keys: "mod+1..8",
+    translationKey: "switchTerminal",
+    category: "navigation",
+  },
+  {
     id: "show-hotkeys",
     keys: "?",
     translationKey: "showHotkeys",

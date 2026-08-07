@@ -395,17 +395,21 @@ function WorkspaceLivePreview({
   const [typedText, setTypedText] = useState("");
   const targetText = autoCommand || "npm run dev";
 
+  // Animate typing effect for live preview.
+  // Note: We use targetText.slice(0, charIndex) rather than mutating a shared index
+  // inside setTypedText((prev) => ...), because synchronously incrementing the index
+  // before React processes the updater closure caused index 0 (the first character) to be skipped.
   useEffect(() => {
     let isCancelled = false;
     setTypedText("");
-    let i = 0;
+    let charIndex = 0;
     const interval = setInterval(() => {
       if (isCancelled) {
         return;
       }
-      if (i < targetText.length) {
-        setTypedText((prev) => prev + targetText.charAt(i));
-        i++;
+      if (charIndex < targetText.length) {
+        charIndex++;
+        setTypedText(targetText.slice(0, charIndex));
       } else {
         clearInterval(interval);
       }
@@ -771,14 +775,12 @@ export function NewWorkspaceDialog({
                     <Terminal className="size-3 text-muted-foreground/80" />{" "}
                     Auto-run Command
                   </Label>
-                  <div className="flex w-full items-center gap-2 rounded-lg border border-border/40 bg-muted/15 px-2.5 py-0.5 transition-colors focus-within:border-primary/45">
-                    <Input
-                      className="h-8.5 flex-1 border-transparent bg-transparent p-0 font-mono text-foreground text-xs focus-visible:ring-0 focus-visible:ring-offset-0"
-                      onChange={(e) => setAutoCommand(e.target.value)}
-                      placeholder="e.g. npm run dev"
-                      value={autoCommand}
-                    />
-                  </div>
+                  <Input
+                    className="h-9.5 w-full border-border/40 bg-muted/20 px-3 font-mono text-foreground text-xs tracking-wide transition-all focus-visible:border-primary/50 focus-visible:ring-1 focus-visible:ring-primary/20"
+                    onChange={(e) => setAutoCommand(e.target.value)}
+                    placeholder="e.g. npm run dev"
+                    value={autoCommand}
+                  />
                   {/* Command Shortcuts */}
                   <div className="flex flex-wrap items-center gap-1.5 pt-1">
                     {[

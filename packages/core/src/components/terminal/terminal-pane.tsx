@@ -1,12 +1,17 @@
 "use client";
 
+import { DeleteTerminalDialog } from "@workspace/core/components/common/delete-terminal-dialog";
 import { useMounted } from "@workspace/core/hooks/use-mounted";
+import { terminalRegistry } from "@workspace/core/lib/terminal-registry";
+import { useWorkspaceStore } from "@workspace/core/stores/workspace-store";
+import { cn } from "@workspace/ui/lib/utils";
 import "@xterm/xterm/css/xterm.css";
 import type { OrchestrationTask } from "@workspace/core/lib/orchestrator-client";
 import type { Task } from "@workspace/core/lib/task-dispatcher";
-import { Maximize2, Minimize2, RotateCcw, Trash2 } from "lucide-react";
+import { Eraser, Maximize2, Minimize2, RotateCcw, Trash2 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 
 const EXIT_CODE_REGEX = /^(\d+)/;
 
@@ -369,6 +374,65 @@ export function TerminalPane({
   const [isTauriEnv, setIsTauriEnv] = useState(false);
   const [isTerminalReady, setIsTerminalReady] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+
+  // Active terminal pane state & registry registration
+  const activeWorkspaceId = useWorkspaceStore((s) => s.activeWorkspaceId);
+  const activePaneIds = useWorkspaceStore((s) => s.activePaneIds);
+  const setActivePane = useWorkspaceStore((s) => s.setActivePane);
+  const deleteTerminalPane = useWorkspaceStore((s) => s.deleteTerminalPane);
+  const workspaces = useWorkspaceStore((s) => s.workspaces);
+
+  const handleOpenDeleteModal = useCallback(() => {
+    if (!activeWorkspaceId) {
+      return;
+    }
+    const currentWs = workspaces.find((w) => w.id === activeWorkspaceId);
+    if (!currentWs || currentWs.panes.length <= 1) {
+      toast.error("Cannot delete the last terminal in a workspace.", {
+        description: "A workspace must contain at least 1 active terminal.",
+      });
+      return;
+    }
+    setIsDeleteDialogOpen(true);
+  }, [activeWorkspaceId, workspaces]);
+
+  const handleConfirmDelete = useCallback(() => {
+    if (activeWorkspaceId) {
+      deleteTerminalPane(activeWorkspaceId, id);
+    }
+  }, [activeWorkspaceId, id, deleteTerminalPane]);
+
+  const currentActivePaneId = activeWorkspaceId
+    ? activePaneIds[activeWorkspaceId]
+    : null;
+  const isActivePane =
+    currentActivePaneId === id || (index === 0 && !currentActivePaneId);
+
+  useEffect(() => {
+    terminalRegistry.register(id, {
+      id,
+      focus: () => {
+        if (termRef.current) {
+          termRef.current.focus();
+        }
+      },
+      containerEl: containerRef.current,
+    });
+
+    return () => {
+      terminalRegistry.unregister(id);
+    };
+  }, [id]);
+
+  const handlePaneActivate = useCallback(() => {
+    if (activeWorkspaceId) {
+      setActivePane(activeWorkspaceId, id);
+    }
+    if (termRef.current) {
+      termRef.current.focus();
+    }
+  }, [activeWorkspaceId, id, setActivePane]);
 
   // Buffer input for mock shell
   const inputBufferRef = useRef("");
@@ -1024,13 +1088,38 @@ export function TerminalPane({
         className={
           isFullscreen
             ? "fixed inset-6 z-50 flex flex-col overflow-hidden rounded-xl border border-border/30 bg-[#08080a] shadow-2xl"
-            : "flex h-full flex-col overflow-auto rounded-lg border border-border/30 bg-[#08080a] shadow-md transition-all duration-300 focus-within:border-primary/50 focus-within:ring-1 focus-within:ring-primary/20 hover:shadow-lg"
+            : cn(
+                "flex h-full flex-col overflow-auto rounded-lg border bg-[#08080a] shadow-md transition-all duration-300 focus-within:border-primary/50 focus-within:ring-1 focus-within:ring-primary/20 hover:shadow-lg",
+                isActivePane
+                  ? "border-primary/60 ring-1 ring-primary/25 shadow-[0_0_15px_rgba(255,224,194,0.06)]"
+                  : "border-border/30 opacity-90 hover:border-border/60 hover:opacity-100"
+              )
         }
+        onClick={handlePaneActivate}
+        onFocus={handlePaneActivate}
       >
         {/* Title Bar / Header */}
-        <div className="flex h-6.5 shrink-0 items-center justify-between border-border/20 border-b bg-[#0f0f12] px-3">
+        <div
+          className={cn(
+            "flex h-6.5 shrink-0 items-center justify-between border-b px-3 transition-colors",
+            isActivePane
+              ? "border-primary/25 bg-[#131318]"
+              : "border-border/20 bg-[#0f0f12]"
+          )}
+        >
           <div className="flex items-center gap-2">
-            <span className="font-mono font-semibold text-[10px] text-muted-foreground/90 tracking-tight">
+            {isActivePane && (
+              <span
+                className="size-1.5 rounded-full bg-primary animate-pulse"
+                title="Active Terminal Pane"
+              />
+            )}
+            <span
+              className={cn(
+                "font-mono font-semibold text-[10px] tracking-tight transition-colors",
+                isActivePane ? "text-foreground" : "text-muted-foreground/80"
+              )}
+            >
               {name ? (
                 <>
                   {name}{" "}
@@ -1056,7 +1145,7 @@ export function TerminalPane({
               title="Clear Terminal Screen"
               type="button"
             >
-              <Trash2 className="size-3" />
+              <Eraser className="size-3" />
             </button>
             <button
               className="flex size-5 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
@@ -1069,7 +1158,10 @@ export function TerminalPane({
             {isFullscreen ? (
               <button
                 className="flex size-5 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                onClick={() => setIsFullscreen(false)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsFullscreen(false);
+                }}
                 title="Exit Fullscreen"
                 type="button"
               >
@@ -1078,13 +1170,27 @@ export function TerminalPane({
             ) : (
               <button
                 className="flex size-5 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                onClick={() => setIsFullscreen(true)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsFullscreen(true);
+                }}
                 title="Fullscreen Terminal"
                 type="button"
               >
                 <Maximize2 className="size-3" />
               </button>
             )}
+            <button
+              className="flex size-5 items-center justify-center rounded-md text-muted-foreground/60 transition-colors hover:bg-rose-500/15 hover:text-rose-400"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleOpenDeleteModal();
+              }}
+              title="Delete Terminal"
+              type="button"
+            >
+              <Trash2 className="size-3" />
+            </button>
           </div>
         </div>
 
@@ -1141,6 +1247,14 @@ export function TerminalPane({
           </motion.div>
         </div>
       </div>
+
+      <DeleteTerminalDialog
+        isOpen={isDeleteDialogOpen}
+        onClose={() => setIsDeleteDialogOpen(false)}
+        onConfirm={handleConfirmDelete}
+        terminalName={name}
+        terminalTitle={title}
+      />
     </>
   );
 }
