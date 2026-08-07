@@ -3,9 +3,7 @@
 import { useDecryption } from "@workspace/core/hooks/use-decryption";
 import { motion } from "motion/react";
 import { useEffect, useState } from "react";
-import { AeonConsole } from "./aeon-console";
-import { AeonHologram } from "./aeon-hologram";
-import { AeonHUD } from "./aeon-hud";
+import { AeonGroupStage } from "./aeon-group-stage";
 import type { Dev } from "./dev-cards";
 
 /* ── AeonInterface Orchestrator ────────────────────────────── */
@@ -42,7 +40,7 @@ export function AeonInterface({ devs }: { devs: Dev[] }) {
   }
 
   return (
-    <section className="relative flex min-h-screen flex-col items-center justify-between overflow-hidden bg-black selection:bg-white/20">
+    <section className="relative flex min-h-screen flex-col items-center justify-between overflow-hidden bg-black selection:bg-white/20 pt-28 sm:pt-36 md:pt-40 pb-12">
       {/* ── Environment Background ── */}
       {/* Dark gradient void */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(255,255,255,0.02)_0%,black_100%)]" />
@@ -59,22 +57,14 @@ export function AeonInterface({ devs }: { devs: Dev[] }) {
 
       {/* ── Main Stage ── */}
       <div className="relative z-10 flex w-full flex-1 flex-col items-center justify-center">
-        {/* The Hologram Materialization */}
-        <div className="w-full max-w-5xl px-4 pt-10 sm:pt-16">
-          <AeonHologram dev={activeDev} />
+        {/* Full Page Group Photo Stage */}
+        <div className="w-full max-w-7xl px-4 sm:px-8">
+          <AeonGroupStage
+            activeIndex={activeIndex}
+            devs={devs}
+            onSelect={setActiveIndex}
+          />
         </div>
-
-        {/* Floating Spatial HUD */}
-        <AeonHUD dev={activeDev} isActive={!isInitializing} />
-      </div>
-
-      {/* ── Command Console Queue ── */}
-      <div className="relative z-30 w-full pb-8 pt-4">
-        <AeonConsole
-          activeIndex={activeIndex}
-          devs={devs}
-          onSelect={setActiveIndex}
-        />
       </div>
     </section>
   );
