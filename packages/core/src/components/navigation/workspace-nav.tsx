@@ -120,7 +120,7 @@ export function WorkspaceNav({ navigate, onNewWorkspace }: WorkspaceNavProps) {
               className={cn(
                 "relative h-9 w-full justify-start gap-2 rounded-md transition-all duration-200 ease-out group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-2",
                 isActive
-                  ? "bg-primary font-medium text-primary-foreground shadow-sm hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                  ? "bg-primary font-medium text-primary-foreground shadow-sm hover:bg-primary/90 hover:text-primary-foreground"
                   : "bg-transparent font-medium text-muted-foreground hover:bg-muted/50 hover:text-foreground"
               )}
               isActive={isActive}
@@ -130,7 +130,7 @@ export function WorkspaceNav({ navigate, onNewWorkspace }: WorkspaceNavProps) {
                 className={cn(
                   "size-4 shrink-0 transition-all duration-200",
                   isActive
-                    ? "text-primary-foreground group-hover/menu-button:text-sidebar-accent-foreground"
+                    ? "text-primary-foreground"
                     : "text-muted-foreground/60 group-hover/menu-button:text-foreground/80"
                 )}
               />
@@ -143,7 +143,7 @@ export function WorkspaceNav({ navigate, onNewWorkspace }: WorkspaceNavProps) {
                 className={cn(
                   "flex h-4 min-w-[16px] shrink-0 items-center justify-center rounded-full px-1 font-bold font-mono text-[10px] transition-all duration-200 group-data-[collapsible=icon]:hidden",
                   isActive
-                    ? "bg-primary-foreground/20 text-primary-foreground group-hover/menu-button:bg-sidebar-accent-foreground/20 group-hover/menu-button:text-sidebar-accent-foreground"
+                    ? "bg-primary-foreground/20 text-primary-foreground"
                     : "bg-muted text-muted-foreground/70 group-hover/menu-button:bg-muted/80"
                 )}
               >
@@ -155,9 +155,9 @@ export function WorkspaceNav({ navigate, onNewWorkspace }: WorkspaceNavProps) {
               <DropdownMenuTrigger asChild={true}>
                 <SidebarMenuAction
                   className={cn(
-                    "!right-2.5 !top-2 opacity-0 transition-all duration-200 group-hover/item:opacity-100",
+                    "!right-2 !top-1.5 size-6 rounded-md opacity-0 transition-all duration-200 group-hover/item:opacity-100 aria-expanded:opacity-100",
                     isActive
-                      ? "!text-primary-foreground hover:!bg-black/10 aria-expanded:!bg-black/10 group-hover/item:!text-sidebar-accent-foreground group-hover/item:hover:!bg-white/10 group-hover/item:aria-expanded:!bg-white/10"
+                      ? "!text-primary-foreground/70 hover:!text-primary-foreground hover:!bg-primary-foreground/15 aria-expanded:!bg-primary-foreground/15 aria-expanded:!text-primary-foreground group-hover/item:!text-primary-foreground/70"
                       : "text-muted-foreground hover:bg-muted hover:text-foreground"
                   )}
                   showOnHover={true}
