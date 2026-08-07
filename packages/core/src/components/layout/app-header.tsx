@@ -2,7 +2,6 @@
 
 import { NotificationCenter } from "@workspace/core/components/common/notification-center";
 import { formatHotkeyDisplay } from "@workspace/core/lib/utils";
-import { useAgentStore } from "@workspace/core/stores/agent-store";
 import { useCommandPaletteStore } from "@workspace/core/stores/command-palette-store";
 import { useWorkspaceStore } from "@workspace/core/stores/workspace-store";
 import {
@@ -13,6 +12,7 @@ import {
 } from "@workspace/ui/components/breadcrumb";
 import { Button } from "@workspace/ui/components/button";
 import { Kbd } from "@workspace/ui/components/kbd";
+import { panelController } from "@workspace/ui/lib/panel-controller";
 import { ChevronRight, Search, Sparkles } from "lucide-react";
 import type { ComponentType } from "react";
 import { toast } from "sonner";
@@ -31,7 +31,6 @@ interface AppHeaderProps {
 
 export function AppHeader({ pathname, LinkComponent = "a" }: AppHeaderProps) {
   const toggleCommandPalette = useCommandPaletteStore((s) => s.toggle);
-  const toggleAgent = useAgentStore((s) => s.toggleOpen);
   const activeWorkspaceId = useWorkspaceStore((s) => s.activeWorkspaceId);
   const workspaces = useWorkspaceStore((s) => s.workspaces);
 
@@ -45,7 +44,7 @@ export function AppHeader({ pathname, LinkComponent = "a" }: AppHeaderProps) {
       toast.error("Create a workspace first to use the Main Agent");
       return;
     }
-    toggleAgent();
+    panelController.togglePanel("agent");
   };
 
   return (

@@ -19,7 +19,7 @@ export function AeonConsole({
     return null;
   }
 
-  const designation = `${activeDev.initials}-${String(activeIndex + 1).padStart(2, "0")}`;
+  const _designation = `${activeDev.initials}-${String(activeIndex + 1).padStart(2, "0")}`;
 
   return (
     <div className="relative z-30 flex w-full flex-col items-center gap-6 px-4 pb-12 sm:pb-16">

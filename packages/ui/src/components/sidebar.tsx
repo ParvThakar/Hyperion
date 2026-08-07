@@ -17,6 +17,10 @@ import {
   TooltipTrigger,
 } from "@workspace/ui/components/tooltip";
 import { useIsMobile } from "@workspace/ui/hooks/use-mobile";
+import {
+  panelController,
+  usePanelControllerStore,
+} from "@workspace/ui/lib/panel-controller";
 import { cn } from "@workspace/ui/lib/utils";
 import { cva, type VariantProps } from "class-variance-authority";
 import { PanelLeftIcon } from "lucide-react";
@@ -65,39 +69,34 @@ function SidebarProvider({
   onOpenChange?: (open: boolean) => void;
 }) {
   const isMobile = useIsMobile();
+  const isSidebarOpen = usePanelControllerStore(
+    (state) => state.openPanels.sidebar
+  );
   const [openMobile, setOpenMobile] = React.useState(false);
 
-  // This is the internal state of the sidebar.
-  // We use openProp and setOpenProp for control from outside the component.
-  const [_open, _setOpen] = React.useState(defaultOpen);
-  const open = openProp ?? _open;
+  const open = openProp ?? isSidebarOpen;
+
   const setOpen = React.useCallback(
     (value: boolean | ((value: boolean) => boolean)) => {
-      const openState = typeof value === "function" ? value(open) : value;
+      const openState =
+        typeof value === "function" ? value(isSidebarOpen) : value;
       if (setOpenProp) {
         setOpenProp(openState);
+      }
+
+      if (openState) {
+        panelController.requestPanel("sidebar");
       } else {
-        _setOpen(openState);
+        panelController.closePanel("sidebar");
       }
-
-      // Mutual Exclusivity: Opening Left Sidebar automatically closes Right Main Agent
-      if (openState && typeof window !== "undefined") {
-        window.dispatchEvent(new CustomEvent("hyperion:sidebar-opened"));
-      }
-
-      // This sets the cookie to keep the sidebar state.
-      // biome-ignore lint/suspicious/noDocumentCookie: Cookie Store API not supported everywhere
-      document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
     },
-    [setOpenProp, open]
+    [setOpenProp, isSidebarOpen]
   );
 
   // Helper to toggle the sidebar.
-  const toggleSidebar = React.useCallback(
-    () =>
-      isMobile ? setOpenMobile((open) => !open) : setOpen((open) => !open),
-    [isMobile, setOpen]
-  );
+  const toggleSidebar = React.useCallback(() => {
+    panelController.togglePanel("sidebar");
+  }, []);
 
   // Adds a keyboard shortcut to toggle the sidebar.
   React.useEffect(() => {
@@ -114,6 +113,19 @@ function SidebarProvider({
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [toggleSidebar]);
+
+  React.useEffect(() => {
+    if (!isMobile) {
+      return;
+    }
+
+    setOpenMobile(isSidebarOpen);
+  }, [isSidebarOpen, isMobile]);
+
+  React.useEffect(() => {
+    // biome-ignore lint/suspicious/noDocumentCookie: Cookie Store API not supported everywhere
+    document.cookie = `${SIDEBAR_COOKIE_NAME}=${isSidebarOpen}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
+  }, [isSidebarOpen]);
 
   // We add a state so that we can do data-state="expanded" or "collapsed".
   // This makes it easier to style the sidebar with Tailwind classes.

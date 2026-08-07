@@ -29,6 +29,10 @@ import {
   SelectValue,
 } from "@workspace/ui/components/select";
 import { Textarea } from "@workspace/ui/components/textarea";
+import {
+  panelController,
+  usePanelControllerStore,
+} from "@workspace/ui/lib/panel-controller";
 import { cn } from "@workspace/ui/lib/utils";
 import {
   Check,
@@ -600,8 +604,6 @@ async function runIterationLoop(
 
 export function AgentSidebar() {
   const {
-    isOpen,
-    toggleOpen,
     messages,
     addMessage,
     upsertMessage,
@@ -613,6 +615,7 @@ export function AgentSidebar() {
     addLog,
   } = useAgentStore();
   const { activeWorkspaceId, workspaces } = useWorkspaceStore();
+  const isOpen = usePanelControllerStore((state) => state.openPanels.agent);
 
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
@@ -620,19 +623,6 @@ export function AgentSidebar() {
   const [targetTerminalId, setTargetTerminalId] = useState<string>("all");
   const scrollRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
-
-  // Mutual Exclusivity: Close Main Agent whenever Left Sidebar expands
-  useEffect(() => {
-    const handleSidebarOpened = () => {
-      useAgentStore.getState().setOpen(false);
-    };
-    window.addEventListener("hyperion:sidebar-opened", handleSidebarOpened);
-    return () =>
-      window.removeEventListener(
-        "hyperion:sidebar-opened",
-        handleSidebarOpened
-      );
-  }, []);
 
   // Planner states
   const [plannerState, setPlannerState] = useState<
@@ -1082,7 +1072,7 @@ export function AgentSidebar() {
               </div>
               <Button
                 className="size-7 rounded-lg hover:bg-muted"
-                onClick={() => toggleOpen()}
+                onClick={() => panelController.togglePanel("agent")}
                 size="icon"
                 variant="ghost"
               >

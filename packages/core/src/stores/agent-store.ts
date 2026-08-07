@@ -1,6 +1,7 @@
 "use client";
 
 import { safeUUID } from "@workspace/core/lib/uuid";
+import { panelController } from "@workspace/ui/lib/panel-controller";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
@@ -76,6 +77,12 @@ interface AgentState {
   upsertMessage: (workspaceId: string, message: AgentMessage) => void;
 }
 
+const syncAgentPanelState = () => {
+  useAgentStore.setState({ isOpen: panelController.isOpen("agent") });
+};
+
+panelController.subscribe(syncAgentPanelState);
+
 export const useAgentStore = create<AgentState>()(
   persist(
     (set) => ({
@@ -94,43 +101,18 @@ export const useAgentStore = create<AgentState>()(
       setOrchestrationStatus: (status) => set({ orchestrationStatus: status }),
       setCurrentRequestId: (requestId) => set({ currentRequestId: requestId }),
       isOpen: false,
-      toggleOpen: () =>
-        set((state) => {
-          const next = !state.isOpen;
-          if (next && typeof document !== "undefined") {
-            // Mutual Exclusivity: Opening Right Main Agent automatically collapses Left Sidebar
-            const wrapper = document.querySelector(
-              '[data-slot="sidebar-wrapper"]'
-            );
-            if (wrapper && wrapper.getAttribute("data-state") === "expanded") {
-              const trigger = document.querySelector(
-                '[data-slot="sidebar-trigger"]'
-              ) as HTMLElement | null;
-              if (trigger) {
-                trigger.click();
-              }
-            }
-          }
-          return { isOpen: next };
-        }),
-      setOpen: (isOpen: boolean) =>
-        set((state) => {
-          if (isOpen && !state.isOpen && typeof document !== "undefined") {
-            // Mutual Exclusivity: Opening Right Main Agent automatically collapses Left Sidebar
-            const wrapper = document.querySelector(
-              '[data-slot="sidebar-wrapper"]'
-            );
-            if (wrapper && wrapper.getAttribute("data-state") === "expanded") {
-              const trigger = document.querySelector(
-                '[data-slot="sidebar-trigger"]'
-              ) as HTMLElement | null;
-              if (trigger) {
-                trigger.click();
-              }
-            }
-          }
-          return { isOpen };
-        }),
+      toggleOpen: () => {
+        panelController.togglePanel("agent");
+        set({ isOpen: panelController.isOpen("agent") });
+      },
+      setOpen: (isOpen: boolean) => {
+        if (isOpen) {
+          panelController.requestPanel("agent");
+        } else {
+          panelController.closePanel("agent");
+        }
+        set({ isOpen: panelController.isOpen("agent") });
+      },
       messages: {},
       addMessage: (workspaceId: string, message: AgentMessage) =>
         set((state) => ({
