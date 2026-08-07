@@ -421,9 +421,49 @@ export function TerminalPane({
   const isActivePane =
     currentActivePaneId === id || (index === 0 && !currentActivePaneId);
 
+  const doFit = useCallback(() => {
+    if (
+      !fitAddonRef.current ||
+      !termRef.current ||
+      !containerRef.current ||
+      containerRef.current.clientWidth === 0 ||
+      containerRef.current.clientHeight === 0
+    ) {
+      return;
+    }
+
+    const proposed = fitAddonRef.current.proposeDimensions();
+    if (!proposed || proposed.cols <= 0 || proposed.rows <= 0) {
+      return;
+    }
+
+    const currentCols = termRef.current.cols;
+    const currentRows = termRef.current.rows;
+
+    if (proposed.cols === currentCols && proposed.rows === currentRows) {
+      return;
+    }
+
+    fitAddonRef.current.fit();
+    const cols = proposed.cols;
+    const rows = proposed.rows;
+    import("@tauri-apps/api/core")
+      .then(({ isTauri, invoke }) => {
+        if (isTauri()) {
+          invoke("resize_terminal", {
+            id: activeSessionIdRef.current,
+            cols,
+            rows,
+          }).catch(() => {});
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   useEffect(() => {
     terminalRegistry.register(id, {
       id,
+      fit: doFit,
       focus: () => {
         if (termRef.current) {
           termRef.current.focus();
@@ -435,7 +475,7 @@ export function TerminalPane({
     return () => {
       terminalRegistry.unregister(id);
     };
-  }, [id]);
+  }, [id, doFit]);
 
   const handlePaneActivate = useCallback(() => {
     if (activeWorkspaceId) {
@@ -818,47 +858,10 @@ export function TerminalPane({
           containerRef.current.clientWidth === 0 ||
           containerRef.current.clientHeight === 0
         ) {
-          return; // Skip resize logic if container is hidden/0px
+          return;
         }
 
-        // Use a trailing debounce for ResizeObserver.
-        // During a 300ms split-pane CSS animation, ResizeObserver fires every 16ms.
-        // This debounce ensures we wait until the container dimension stabilizes (animation finishes)
-        // before we ask xterm.js to recalculate character wrapping and re-allocate its canvas buffer.
-        // This eliminates all mid-animation text jumping, cursor flickering, and layout thrashing.
-        if (resizeTimerRef.current) {
-          clearTimeout(resizeTimerRef.current);
-        }
-
-        resizeTimerRef.current = setTimeout(() => {
-          if (
-            disposed ||
-            !fitAddonRef.current ||
-            !termRef.current ||
-            !containerRef.current ||
-            containerRef.current.clientWidth === 0
-          ) {
-            return;
-          }
-
-          // Calculate proposed grid dimensions without triggering a canvas reflow/redraw
-          const proposed = fitAddonRef.current.proposeDimensions();
-          if (!proposed || proposed.cols <= 0 || proposed.rows <= 0) {
-            return;
-          }
-
-          const currentCols = termRef.current.cols;
-          const currentRows = termRef.current.rows;
-
-          // Bail out if character column and row counts have not changed.
-          // This prevents sub-pixel layout width shifts from triggering canvas redraws.
-          if (proposed.cols === currentCols && proposed.rows === currentRows) {
-            return;
-          }
-
-          fitAddonRef.current.fit();
-          resizePty(proposed.cols, proposed.rows);
-        }, 150);
+        terminalRegistry.scheduleBatchFit(100);
       });
 
       if (containerRef.current) {
@@ -866,20 +869,6 @@ export function TerminalPane({
       }
 
       await initializeShell(term);
-    }
-
-    async function resizePty(cols: number, rows: number) {
-      if (cols <= 0 || rows <= 0) {
-        return;
-      }
-      try {
-        const { isTauri, invoke } = await import("@tauri-apps/api/core");
-        if (isTauri()) {
-          await invoke("resize_terminal", { id: activeSessionId, cols, rows });
-        }
-      } catch {
-        // ignore
-      }
     }
 
     init();
@@ -1352,7 +1341,7 @@ export function TerminalPane({
 
         {/* xterm.js Container / Animated Transition */}
         <div
-          className="relative flex-1 overflow-auto bg-[#08080a]"
+          className="relative flex-1 overflow-hidden bg-[#08080a]"
           onPaste={isFullscreen ? handleImagePaste : undefined}
           style={{ minHeight: 0 }}
         >
