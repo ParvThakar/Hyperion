@@ -28,8 +28,12 @@ export function useDecryption(
       const scrambled = targetText
         .split("")
         .map((char, index) => {
-          if (char === " ") return " ";
-          if (index < revealedLength) return char;
+          if (char === " ") {
+            return " ";
+          }
+          if (index < revealedLength) {
+            return char;
+          }
           return CHARS[Math.floor(Math.random() * CHARS.length)];
         })
         .join("");

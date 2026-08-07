@@ -84,7 +84,6 @@ export function WorkspaceNav({ navigate, onNewWorkspace }: WorkspaceNavProps) {
   const pinnedWorkspaces = workspaces.filter((w) => w.isPinned);
   const regularWorkspaces = workspaces.filter((w) => !w.isPinned);
 
-  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Self-contained item renderer
   const renderWorkspaceItem = (ws: Workspace) => {
     const isActive = ws.id === activeWorkspaceId;
     return (
@@ -125,6 +124,7 @@ export function WorkspaceNav({ navigate, onNewWorkspace }: WorkspaceNavProps) {
               )}
               isActive={isActive}
               onClick={() => handleSelect(ws.id)}
+              tooltip={ws.name}
             >
               <Terminal
                 className={cn(
@@ -251,15 +251,15 @@ export function WorkspaceNav({ navigate, onNewWorkspace }: WorkspaceNavProps) {
         <SidebarMenuItem className="px-1.5">
           <SidebarMenuButton
             className={cn(
-              "w-full justify-start gap-2.5 rounded-lg border px-3 py-5 font-semibold transition-all duration-300 ease-out active:scale-[0.98] group-data-[collapsible=icon]:p-2",
-              "border-primary/20 bg-gradient-to-r from-primary/10 to-primary/5 text-primary shadow-[0_4px_12px_-4px_rgba(255,224,194,0.06)] hover:border-primary/45 hover:from-primary/15 hover:to-primary/8 hover:shadow-[0_4px_16px_rgba(255,224,194,0.12)]"
+              "relative h-9 w-full justify-start gap-2.5 rounded-md border font-semibold transition-all duration-200 ease-out active:scale-[0.97]",
+              "border-primary/25 bg-primary/10 text-primary shadow-xs hover:border-primary/45 hover:bg-primary/15 hover:text-primary",
+              "group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-0"
             )}
             onClick={onNewWorkspace}
+            tooltip="New Workspace"
           >
-            <div className="flex size-5 shrink-0 items-center justify-center rounded bg-primary/10 transition-transform duration-300 group-hover:scale-110">
-              <Plus className="size-4 text-primary" />
-            </div>
-            <span className="select-none font-bold text-[10px] uppercase tracking-widest group-data-[collapsible=icon]:hidden">
+            <Plus className="size-4 shrink-0 transition-transform duration-200 ease-out group-hover/menu-button:rotate-90 group-hover/menu-button:scale-110" />
+            <span className="select-none font-semibold text-xs uppercase tracking-wider group-data-[collapsible=icon]:hidden">
               New Workspace
             </span>
           </SidebarMenuButton>

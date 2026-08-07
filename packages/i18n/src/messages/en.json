@@ -83,6 +83,7 @@
     "newWorkspace": "New Workspace",
     "goSettings": "Go to Settings",
     "switchTerminal": "Switch Terminal Pane (1-8)",
+    "toggleFullscreen": "Toggle Terminal Fullscreen",
     "goHome": "Go to Home",
     "goDashboard": "Go to Dashboard",
     "goAnalytics": "Go to Analytics",

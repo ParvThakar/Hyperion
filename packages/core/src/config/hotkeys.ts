@@ -37,6 +37,12 @@ export const hotkeys: HotkeyDefinition[] = [
     category: "navigation",
   },
   {
+    id: "toggle-fullscreen",
+    keys: "F11",
+    translationKey: "toggleFullscreen",
+    category: "navigation",
+  },
+  {
     id: "show-hotkeys",
     keys: "?",
     translationKey: "showHotkeys",

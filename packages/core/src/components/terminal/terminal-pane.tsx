@@ -1,6 +1,7 @@
 "use client";
 
 import { DeleteTerminalDialog } from "@workspace/core/components/common/delete-terminal-dialog";
+import { ResetTerminalDialog } from "@workspace/core/components/common/reset-terminal-dialog";
 import { useMounted } from "@workspace/core/hooks/use-mounted";
 import { terminalRegistry } from "@workspace/core/lib/terminal-registry";
 import { useWorkspaceStore } from "@workspace/core/stores/workspace-store";
@@ -8,7 +9,7 @@ import { cn } from "@workspace/ui/lib/utils";
 import "@xterm/xterm/css/xterm.css";
 import type { OrchestrationTask } from "@workspace/core/lib/orchestrator-client";
 import type { Task } from "@workspace/core/lib/task-dispatcher";
-import { Eraser, Maximize2, Minimize2, RotateCcw, Trash2 } from "lucide-react";
+import { Maximize2, Minimize2, RotateCcw, Trash2 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -367,16 +368,25 @@ export function TerminalPane({
   index = 0,
 }: TerminalPaneProps) {
   const mounted = useMounted();
+  const paneRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const termRef = useRef<TerminalInstance>(null);
   const fitAddonRef = useRef<FitAddonInstance>(null);
   const resizeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const lastFitWidthRef = useRef<number>(0);
   const [shellType, setShellType] = useState("Local Shell");
   const [isTauriEnv, setIsTauriEnv] = useState(false);
   const [isTerminalReady, setIsTerminalReady] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isResetDialogOpen, setIsResetDialogOpen] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
+  const isResettingRef = useRef<boolean>(false);
+  const [activeSessionId, setActiveSessionId] = useState<string>(id);
+  const activeSessionIdRef = useRef<string>(id);
+
+  useEffect(() => {
+    activeSessionIdRef.current = activeSessionId;
+  }, [activeSessionId]);
 
   // Active terminal pane state & registry registration
   const activeWorkspaceId = useWorkspaceStore((s) => s.activeWorkspaceId);
@@ -579,9 +589,11 @@ export function TerminalPane({
         return { isTauriActive: false };
       }
 
+      const currentSessionId = activeSessionId;
+
       // 1. Listen for stdout events first to avoid race conditions and lost bytes
       unlistenStdout = await listen<TerminalEventPayload>(
-        `terminal-stdout-${id}`,
+        `terminal-stdout-${currentSessionId}`,
         async (event) => {
           if (disposed) {
             return;
@@ -603,7 +615,7 @@ export function TerminalPane({
                 current: { id: string; command: string; output: string } | null;
               }
             >
-          )[`activeTask_${id}`];
+          )[`activeTask_${currentSessionId}`];
           if (activeTaskRef?.current) {
             await processTaskOutput(
               payload.data,
@@ -615,39 +627,85 @@ export function TerminalPane({
       );
 
       // 2. Setup user input key event forwarding
-      term.onData((data: string) => {
-        invoke("write_terminal", { id, data }).catch((err) => {
-          term.writeln(`\r\n\x1b[31mError writing to terminal: ${err}\x1b[0m`);
-        });
+      const onDataDisposable = term.onData((data: string) => {
+        if (isResettingRef.current) {
+          return;
+        }
+        invoke("write_terminal", { id: currentSessionId, data }).catch(
+          (err: unknown) => {
+            const errStr = String(err);
+            if (
+              !(
+                isResettingRef.current ||
+                errStr.includes("Terminal session not found")
+              )
+            ) {
+              term.writeln(
+                `\r\n\x1b[31mError writing to terminal: ${errStr}\x1b[0m`
+              );
+            }
+          }
+        );
       });
 
-      // 3. Spawns/attaches backend session
-      const cols = term.cols > 0 ? term.cols : 80;
-      const rows = term.rows > 0 ? term.rows : 24;
+      // 3. Spawns/attaches backend session with exact proposed grid dimensions
+      let cols = term.cols > 0 ? term.cols : 80;
+      let rows = term.rows > 0 ? term.rows : 24;
+      if (fitAddonRef.current) {
+        const dims = fitAddonRef.current.proposeDimensions();
+        if (dims && dims.cols > 0 && dims.rows > 0) {
+          cols = dims.cols;
+          rows = dims.rows;
+          fitAddonRef.current.fit();
+        }
+      }
+
       const isNew = await invoke<boolean>("create_terminal", {
-        id,
+        id: currentSessionId,
         cols,
         rows,
         cwd,
       });
 
       // 4. Retrieve history and current total bytes read from backend
-      const historyInfo = await invoke<TerminalHistoryInfo>(
-        "get_terminal_history",
-        { id }
-      );
+      let historyInfo: TerminalHistoryInfo | null = null;
+      for (let poll = 0; poll < 16; poll++) {
+        historyInfo = await invoke<TerminalHistoryInfo>(
+          "get_terminal_history",
+          { id: currentSessionId }
+        ).catch(() => null);
+
+        if (
+          historyInfo &&
+          historyInfo.history &&
+          historyInfo.history.length > 0
+        ) {
+          break;
+        }
+        await new Promise((resolve) => setTimeout(resolve, 25));
+      }
+
       if (!disposed && historyInfo) {
-        term.write(historyInfo.history);
-        currentOffsetRef.current = historyInfo.total_read;
+        term.reset();
+        term.clear();
+        if (historyInfo.history) {
+          term.write(historyInfo.history);
+          currentOffsetRef.current = historyInfo.total_read;
+        }
 
         // Process buffered pending events in order
         processPendingEvents(term, pendingEventsRef.current, currentOffsetRef);
 
         pendingEventsRef.current = [];
         isInitializedRef.current = true;
+        // Ensure cursor is explicitly enabled and visible
+        term.write("\x1b[?25h");
+      } else if (!(disposed || isTauriEnv)) {
+        // Fallback for Web/Mock environment if historyInfo is unavailable
+        isInitializedRef.current = true;
       }
 
-      return { isTauriActive: true, isNew };
+      return { isTauriActive: true, isNew, onDataDisposable };
     }
 
     async function runTauriSetupWithRetries(
@@ -682,7 +740,13 @@ export function TerminalPane({
       }
 
       if (res.isTauriActive) {
-        executeTauriAutoCommand(id, autoCommand, res.isNew, disposed, index);
+        executeTauriAutoCommand(
+          activeSessionId,
+          autoCommand,
+          res.isNew,
+          disposed,
+          index
+        );
       } else if (!disposed) {
         setupMockShell(term);
         executeMockAutoCommand(term, autoCommand, directory, handleMockCommand);
@@ -690,6 +754,8 @@ export function TerminalPane({
 
       if (!disposed) {
         setIsTerminalReady(true);
+        isResettingRef.current = false;
+        setIsResetting(false);
       }
     }
 
@@ -809,7 +875,7 @@ export function TerminalPane({
       try {
         const { isTauri, invoke } = await import("@tauri-apps/api/core");
         if (isTauri()) {
-          await invoke("resize_terminal", { id, cols, rows });
+          await invoke("resize_terminal", { id: activeSessionId, cols, rows });
         }
       } catch {
         // ignore
@@ -832,6 +898,7 @@ export function TerminalPane({
       }
     };
   }, [
+    activeSessionId,
     id,
     mounted,
     setupMockShell,
@@ -942,104 +1009,170 @@ export function TerminalPane({
     }
   }, [isActiveWorkspace, id]);
 
-  // ─── Fullscreen: fit terminal on open + Escape to close ───
-  useEffect(() => {
-    if (!isFullscreen) {
-      return;
-    }
+  const toggleFullscreen = useCallback(
+    (e?: React.MouseEvent | KeyboardEvent) => {
+      if (e) {
+        e.stopPropagation();
+      }
+      if (activeWorkspaceId) {
+        setActivePane(activeWorkspaceId, id);
+      }
+      setIsFullscreen((prev) => {
+        const next = !prev;
+        setTimeout(() => {
+          if (termRef.current) {
+            termRef.current.focus();
+          }
+        }, 50);
+        return next;
+      });
+    },
+    [activeWorkspaceId, id, setActivePane]
+  );
 
-    // Fit terminal to the new fullscreen dimensions
+  // ─── Fullscreen: fit terminal on toggle + F11 / Escape hotkeys ───
+  useEffect(() => {
+    // Fit terminal to the new dimensions on entering OR exiting fullscreen
     const timer = setTimeout(() => {
       if (fitAddonRef.current && containerRef.current) {
         fitAddonRef.current.fit();
+        const cols = termRef.current?.cols;
+        const rows = termRef.current?.rows;
+        if (cols && rows && cols > 0 && rows > 0) {
+          import("@tauri-apps/api/core")
+            .then(({ isTauri, invoke }) => {
+              if (isTauri()) {
+                invoke("resize_terminal", {
+                  id: activeSessionIdRef.current,
+                  cols,
+                  rows,
+                }).catch(() => {});
+              }
+            })
+            .catch(() => {});
+        }
       }
     }, 50);
 
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        setIsFullscreen(false);
-      }
-    };
-    window.addEventListener("keydown", onKeyDown);
-
-    return () => {
-      clearTimeout(timer);
-      window.removeEventListener("keydown", onKeyDown);
-    };
+    return () => clearTimeout(timer);
   }, [isFullscreen]);
 
-  const handleClear = async () => {
-    if (termRef.current) {
-      termRef.current.clear();
-      if (isTauriEnv) {
-        try {
-          const { invoke } = await import("@tauri-apps/api/core");
-          const clearCmd = navigator.userAgent.includes("Windows")
-            ? "cls\r"
-            : "clear\r";
-          await invoke("write_terminal", { id, data: clearCmd });
-        } catch {
-          // ignore
-        }
-      }
-    }
-  };
-
-  const handleReset = async () => {
-    if (!isTauriEnv) {
-      if (termRef.current) {
-        termRef.current.clear();
-        termRef.current.writeln(
-          "\x1b[1;33mShell session reset successfully.\x1b[0m\r\n"
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "F11") {
+        const activeEl = document.activeElement;
+        const isFocusedInThisPane = Boolean(
+          paneRef.current && activeEl && paneRef.current.contains(activeEl)
         );
-        termRef.current.write("\x1b[1;32mhyperion-demo@web:~$\x1b[0m ");
+
+        if (isFullscreen || isFocusedInThisPane) {
+          e.preventDefault();
+          e.stopPropagation();
+          toggleFullscreen(e);
+        }
+      } else if (e.key === "Escape" && isFullscreen) {
+        e.preventDefault();
+        e.stopPropagation();
+        toggleFullscreen(e);
       }
+    };
+
+    window.addEventListener("keydown", onKeyDown, { capture: true });
+    return () => {
+      window.removeEventListener("keydown", onKeyDown, { capture: true });
+    };
+  }, [isFullscreen, toggleFullscreen]);
+
+  const executeResetSession = useCallback(async () => {
+    if (isResettingRef.current) {
       return;
     }
 
     try {
-      const { invoke } = await import("@tauri-apps/api/core");
+      isResettingRef.current = true;
+      setIsResetting(true);
 
-      // Reset frontend tracking state for new session
+      const oldSessionId = activeSessionIdRef.current;
+      const nextSessionId = `${id}-${Date.now()}`;
+
+      // 1. Reset frontend data tracking refs
       isInitializedRef.current = false;
       currentOffsetRef.current = 0;
       pendingEventsRef.current = [];
+      inputBufferRef.current = "";
 
-      await invoke("close_terminal", { id });
-
-      const term = termRef.current;
-      if (term && fitAddonRef.current) {
-        term.clear();
-        const cols = term.cols > 0 ? term.cols : 80;
-        const rows = term.rows > 0 ? term.rows : 24;
-        await invoke("create_terminal", { id, cols, rows, cwd });
-
-        const historyInfo = await invoke<TerminalHistoryInfo>(
-          "get_terminal_history",
-          { id }
-        );
-        if (historyInfo) {
-          term.write(historyInfo.history);
-          currentOffsetRef.current = historyInfo.total_read;
-
-          // Process any events that arrived during re-creation
-          processPendingEvents(
-            term,
-            pendingEventsRef.current,
-            currentOffsetRef
-          );
-
-          pendingEventsRef.current = [];
-          isInitializedRef.current = true;
-
-          // Trigger startup command on reset
-          executeTauriAutoCommand(id, autoCommand, true, false, index);
+      // 2. Clear active task tracking for old session
+      if (typeof window !== "undefined") {
+        const activeTaskRef = (
+          window as unknown as Record<
+            string,
+            { current: { id: string; command: string; output: string } | null }
+          >
+        )[`activeTask_${oldSessionId}`];
+        if (activeTaskRef) {
+          activeTaskRef.current = null;
         }
       }
+
+      // 3. Reset xterm terminal instance display
+      const term = termRef.current;
+      if (term) {
+        term.reset();
+        term.clear();
+      }
+
+      if (isTauriEnv) {
+        const { invoke } = await import("@tauri-apps/api/core");
+
+        // Force-kill old backend process tree immediately
+        await invoke("close_terminal", { id: oldSessionId }).catch(() => {});
+      }
+
+      // 4. Update session ID -> triggers setup effect for nextSessionId cleanly!
+      activeSessionIdRef.current = nextSessionId;
+      setActiveSessionId(nextSessionId);
+
+      toast.success("Shell session reset", {
+        description: "Terminated processes and created a fresh terminal.",
+      });
     } catch {
-      // ignore
+      toast.error("Failed to reset shell session");
+      isResettingRef.current = false;
+      setIsResetting(false);
     }
-  };
+  }, [id, isTauriEnv]);
+
+  const handleResetButtonClick = useCallback(async () => {
+    if (isResetting) {
+      return;
+    }
+
+    let isBusy = false;
+    if (isTauriEnv) {
+      try {
+        const { invoke } = await import("@tauri-apps/api/core");
+        isBusy = await invoke<boolean>("is_terminal_busy", {
+          id: activeSessionIdRef.current,
+        });
+      } catch {
+        isBusy = false;
+      }
+    } else if (typeof window !== "undefined") {
+      const activeTaskRef = (
+        window as unknown as Record<
+          string,
+          { current: { id: string; command: string; output: string } | null }
+        >
+      )[`activeTask_${activeSessionIdRef.current}`];
+      isBusy = Boolean(activeTaskRef?.current);
+    }
+
+    if (isBusy) {
+      setIsResetDialogOpen(true);
+    } else {
+      executeResetSession();
+    }
+  }, [executeResetSession, isResetting, isTauriEnv]);
 
   // ─── Image paste handler for fullscreen mode ───
   const handleImagePaste = useCallback((e: React.ClipboardEvent) => {
@@ -1107,14 +1240,14 @@ export function TerminalPane({
       {isFullscreen && (
         <div
           className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
-          onClick={() => setIsFullscreen(false)}
+          onClick={toggleFullscreen}
         />
       )}
 
       <div
         className={
           isFullscreen
-            ? "fixed inset-6 z-50 flex flex-col overflow-hidden rounded-xl border border-border/30 bg-[#08080a] shadow-2xl"
+            ? "fixed inset-4 sm:inset-6 z-50 flex flex-col overflow-hidden rounded-xl border border-border/30 bg-[#08080a] shadow-2xl"
             : cn(
                 "flex h-full flex-col overflow-hidden rounded-lg border bg-[#08080a] shadow-md transition-[border-color,box-shadow,opacity] duration-300 focus-within:border-primary/50 focus-within:ring-1 focus-within:ring-primary/20 hover:shadow-lg",
                 isActivePane
@@ -1124,6 +1257,7 @@ export function TerminalPane({
         }
         onClick={handlePaneActivate}
         onFocus={handlePaneActivate}
+        ref={paneRef}
       >
         {/* Title Bar / Header */}
         <div
@@ -1167,29 +1301,27 @@ export function TerminalPane({
 
           <div className="flex items-center gap-1">
             <button
-              className="flex size-5 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-              onClick={handleClear}
-              title="Clear Terminal Screen"
-              type="button"
-            >
-              <Eraser className="size-3" />
-            </button>
-            <button
-              className="flex size-5 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-              onClick={handleReset}
+              className={cn(
+                "flex size-5 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:pointer-events-none disabled:opacity-40",
+                isResetting && "text-primary"
+              )}
+              disabled={isResetting}
+              onClick={handleResetButtonClick}
               title="Reset Shell Session"
               type="button"
             >
-              <RotateCcw className="size-3" />
+              <RotateCcw
+                className={cn(
+                  "size-3 transition-transform duration-300",
+                  isResetting && "animate-spin"
+                )}
+              />
             </button>
             {isFullscreen ? (
               <button
                 className="flex size-5 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setIsFullscreen(false);
-                }}
-                title="Exit Fullscreen"
+                onClick={toggleFullscreen}
+                title="Exit Fullscreen (F11)"
                 type="button"
               >
                 <Minimize2 className="size-3" />
@@ -1197,11 +1329,8 @@ export function TerminalPane({
             ) : (
               <button
                 className="flex size-5 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setIsFullscreen(true);
-                }}
-                title="Fullscreen Terminal"
+                onClick={toggleFullscreen}
+                title="Fullscreen Terminal (F11)"
                 type="button"
               >
                 <Maximize2 className="size-3" />
@@ -1279,6 +1408,13 @@ export function TerminalPane({
         isOpen={isDeleteDialogOpen}
         onClose={() => setIsDeleteDialogOpen(false)}
         onConfirm={handleConfirmDelete}
+        terminalName={name}
+        terminalTitle={title}
+      />
+      <ResetTerminalDialog
+        isOpen={isResetDialogOpen}
+        onClose={() => setIsResetDialogOpen(false)}
+        onConfirm={executeResetSession}
         terminalName={name}
         terminalTitle={title}
       />
