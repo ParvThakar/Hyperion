@@ -19,6 +19,12 @@ export const hotkeys: HotkeyDefinition[] = [
     category: "general",
   },
   {
+    id: "toggle-agent",
+    keys: "ctrl+`",
+    translationKey: "toggleAgent",
+    category: "general",
+  },
+  {
     id: "new-workspace",
     keys: "mod+n",
     translationKey: "newWorkspace",
@@ -28,6 +34,18 @@ export const hotkeys: HotkeyDefinition[] = [
     id: "go-settings",
     keys: "g>s",
     translationKey: "goSettings",
+    category: "navigation",
+  },
+  {
+    id: "switch-terminal",
+    keys: "mod+1..8",
+    translationKey: "switchTerminal",
+    category: "navigation",
+  },
+  {
+    id: "toggle-fullscreen",
+    keys: "F11",
+    translationKey: "toggleFullscreen",
     category: "navigation",
   },
   {

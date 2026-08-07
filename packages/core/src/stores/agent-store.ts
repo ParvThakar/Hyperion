@@ -1,6 +1,7 @@
 "use client";
 
 import { safeUUID } from "@workspace/core/lib/uuid";
+import { panelController } from "@workspace/ui/lib/panel-controller";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
@@ -76,6 +77,12 @@ interface AgentState {
   upsertMessage: (workspaceId: string, message: AgentMessage) => void;
 }
 
+const syncAgentPanelState = () => {
+  useAgentStore.setState({ isOpen: panelController.isOpen("agent") });
+};
+
+panelController.subscribe(syncAgentPanelState);
+
 export const useAgentStore = create<AgentState>()(
   persist(
     (set) => ({
@@ -94,8 +101,18 @@ export const useAgentStore = create<AgentState>()(
       setOrchestrationStatus: (status) => set({ orchestrationStatus: status }),
       setCurrentRequestId: (requestId) => set({ currentRequestId: requestId }),
       isOpen: false,
-      toggleOpen: () => set((state) => ({ isOpen: !state.isOpen })),
-      setOpen: (isOpen: boolean) => set({ isOpen }),
+      toggleOpen: () => {
+        panelController.togglePanel("agent");
+        set({ isOpen: panelController.isOpen("agent") });
+      },
+      setOpen: (isOpen: boolean) => {
+        if (isOpen) {
+          panelController.requestPanel("agent");
+        } else {
+          panelController.closePanel("agent");
+        }
+        set({ isOpen: panelController.isOpen("agent") });
+      },
       messages: {},
       addMessage: (workspaceId: string, message: AgentMessage) =>
         set((state) => ({

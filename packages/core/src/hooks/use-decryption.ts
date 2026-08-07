@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useState } from "react";
 
 const GLYPHS = "ABCDEF0123456789!@#$%^&*()_+-=[]{}|;:,.<>?/~";

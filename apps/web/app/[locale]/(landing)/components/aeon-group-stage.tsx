@@ -85,10 +85,10 @@ export function AeonGroupStage({
                 "absolute cursor-pointer transition-all duration-300",
                 spot.zIndex
               )}
-              style={spot.style}
               key={spot.label}
               onClick={() => onSelect(spot.devIndex)}
               onMouseEnter={() => onSelect(spot.devIndex)}
+              style={spot.style}
             />
           ))}
         </div>

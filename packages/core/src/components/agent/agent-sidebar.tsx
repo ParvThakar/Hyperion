@@ -17,6 +17,7 @@ import {
   type TerminalState,
   useAgentStore,
 } from "@workspace/core/stores/agent-store";
+import { terminalRegistry } from "@workspace/core/lib/terminal-registry";
 import { useWorkspaceStore } from "@workspace/core/stores/workspace-store";
 import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
@@ -29,6 +30,10 @@ import {
   SelectValue,
 } from "@workspace/ui/components/select";
 import { Textarea } from "@workspace/ui/components/textarea";
+import {
+  panelController,
+  usePanelControllerStore,
+} from "@workspace/ui/lib/panel-controller";
 import { cn } from "@workspace/ui/lib/utils";
 import {
   Check,
@@ -600,8 +605,6 @@ async function runIterationLoop(
 
 export function AgentSidebar() {
   const {
-    isOpen,
-    toggleOpen,
     messages,
     addMessage,
     upsertMessage,
@@ -613,6 +616,7 @@ export function AgentSidebar() {
     addLog,
   } = useAgentStore();
   const { activeWorkspaceId, workspaces } = useWorkspaceStore();
+  const isOpen = usePanelControllerStore((state) => state.openPanels.agent);
 
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
@@ -1046,7 +1050,12 @@ export function AgentSidebar() {
   };
 
   return (
-    <AnimatePresence>
+    <AnimatePresence
+      onExitComplete={() => {
+        terminalRegistry.setTransitioning(false);
+        terminalRegistry.fitAllTerminals();
+      }}
+    >
       {isOpen && activeWorkspace && (
         <motion.div
           animate={{ width: "400px", opacity: 1 }}
@@ -1054,7 +1063,14 @@ export function AgentSidebar() {
           exit={{ width: 0, opacity: 0 }}
           initial={{ width: 0, opacity: 0 }}
           key="agent-sidebar"
-          transition={{ bounce: 0, duration: 0.3, type: "spring" }}
+          onAnimationComplete={() => {
+            terminalRegistry.setTransitioning(false);
+            terminalRegistry.fitAllTerminals();
+          }}
+          onAnimationStart={() => {
+            terminalRegistry.setTransitioning(true);
+          }}
+          transition={{ duration: 0.3, ease: [0.32, 0.72, 0, 1] }}
         >
           <div className="flex h-full w-[400px] flex-col overflow-hidden">
             {/* Header */}
@@ -1069,7 +1085,7 @@ export function AgentSidebar() {
               </div>
               <Button
                 className="size-7 rounded-lg hover:bg-muted"
-                onClick={() => toggleOpen()}
+                onClick={() => panelController.togglePanel("agent")}
                 size="icon"
                 variant="ghost"
               >
