@@ -755,41 +755,43 @@ export function TerminalPane({
           return; // Skip resize logic if container is hidden/0px
         }
 
-        // Debounce fit() calls during animated layout shifts (sidebar / agent panel transitions).
-        // This prevents xterm.js from recalculating line wraps on every 16ms frame,
-        // eliminating text jump, cursor flicker, and reflow lag.
+        // Use a trailing debounce for ResizeObserver.
+        // During a 300ms split-pane CSS animation, ResizeObserver fires every 16ms.
+        // This debounce ensures we wait until the container dimension stabilizes (animation finishes)
+        // before we ask xterm.js to recalculate character wrapping and re-allocate its canvas buffer.
+        // This eliminates all mid-animation text jumping, cursor flickering, and layout thrashing.
         if (resizeTimerRef.current) {
           clearTimeout(resizeTimerRef.current);
         }
 
         resizeTimerRef.current = setTimeout(() => {
-          requestAnimationFrame(() => {
-            if (
-              disposed ||
-              !fitAddonRef.current ||
-              !containerRef.current ||
-              containerRef.current.clientWidth === 0
-            ) {
-              return;
-            }
+          if (
+            disposed ||
+            !fitAddonRef.current ||
+            !termRef.current ||
+            !containerRef.current ||
+            containerRef.current.clientWidth === 0
+          ) {
+            return;
+          }
 
-            const currentWidth = containerRef.current.clientWidth;
-            // Ignore small sub-character width shifts (< 8px)
-            if (Math.abs(currentWidth - lastFitWidthRef.current) < 8) {
-              return;
-            }
+          // Calculate proposed grid dimensions without triggering a canvas reflow/redraw
+          const proposed = fitAddonRef.current.proposeDimensions();
+          if (!proposed || proposed.cols <= 0 || proposed.rows <= 0) {
+            return;
+          }
 
-            lastFitWidthRef.current = currentWidth;
-            fitAddonRef.current.fit();
+          const currentCols = termRef.current.cols;
+          const currentRows = termRef.current.rows;
 
-            if (termRef.current) {
-              const cols = termRef.current.cols;
-              const rows = termRef.current.rows;
-              if (cols > 0 && rows > 0) {
-                resizePty(cols, rows);
-              }
-            }
-          });
+          // Bail out if character column and row counts have not changed.
+          // This prevents sub-pixel layout width shifts from triggering canvas redraws.
+          if (proposed.cols === currentCols && proposed.rows === currentRows) {
+            return;
+          }
+
+          fitAddonRef.current.fit();
+          resizePty(proposed.cols, proposed.rows);
         }, 150);
       });
 
@@ -1114,7 +1116,7 @@ export function TerminalPane({
           isFullscreen
             ? "fixed inset-6 z-50 flex flex-col overflow-hidden rounded-xl border border-border/30 bg-[#08080a] shadow-2xl"
             : cn(
-                "flex h-full flex-col overflow-auto rounded-lg border bg-[#08080a] shadow-md transition-all duration-300 focus-within:border-primary/50 focus-within:ring-1 focus-within:ring-primary/20 hover:shadow-lg",
+                "flex h-full flex-col overflow-hidden rounded-lg border bg-[#08080a] shadow-md transition-[border-color,box-shadow,opacity] duration-300 focus-within:border-primary/50 focus-within:ring-1 focus-within:ring-primary/20 hover:shadow-lg",
                 isActivePane
                   ? "border-primary/60 ring-1 ring-primary/25 shadow-[0_0_15px_rgba(255,224,194,0.06)]"
                   : "border-border/30 opacity-90 hover:border-border/60 hover:opacity-100"

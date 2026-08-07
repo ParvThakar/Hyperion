@@ -621,6 +621,19 @@ export function AgentSidebar() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
+  // Mutual Exclusivity: Close Main Agent whenever Left Sidebar expands
+  useEffect(() => {
+    const handleSidebarOpened = () => {
+      useAgentStore.getState().setOpen(false);
+    };
+    window.addEventListener("hyperion:sidebar-opened", handleSidebarOpened);
+    return () =>
+      window.removeEventListener(
+        "hyperion:sidebar-opened",
+        handleSidebarOpened
+      );
+  }, []);
+
   // Planner states
   const [plannerState, setPlannerState] = useState<
     "idle" | "planning" | "executing"
@@ -1054,7 +1067,7 @@ export function AgentSidebar() {
           exit={{ width: 0, opacity: 0 }}
           initial={{ width: 0, opacity: 0 }}
           key="agent-sidebar"
-          transition={{ bounce: 0, duration: 0.3, type: "spring" }}
+          transition={{ duration: 0.3, ease: [0.32, 0.72, 0, 1] }}
         >
           <div className="flex h-full w-[400px] flex-col overflow-hidden">
             {/* Header */}

@@ -94,8 +94,43 @@ export const useAgentStore = create<AgentState>()(
       setOrchestrationStatus: (status) => set({ orchestrationStatus: status }),
       setCurrentRequestId: (requestId) => set({ currentRequestId: requestId }),
       isOpen: false,
-      toggleOpen: () => set((state) => ({ isOpen: !state.isOpen })),
-      setOpen: (isOpen: boolean) => set({ isOpen }),
+      toggleOpen: () =>
+        set((state) => {
+          const next = !state.isOpen;
+          if (next && typeof document !== "undefined") {
+            // Mutual Exclusivity: Opening Right Main Agent automatically collapses Left Sidebar
+            const wrapper = document.querySelector(
+              '[data-slot="sidebar-wrapper"]'
+            );
+            if (wrapper && wrapper.getAttribute("data-state") === "expanded") {
+              const trigger = document.querySelector(
+                '[data-slot="sidebar-trigger"]'
+              ) as HTMLElement | null;
+              if (trigger) {
+                trigger.click();
+              }
+            }
+          }
+          return { isOpen: next };
+        }),
+      setOpen: (isOpen: boolean) =>
+        set((state) => {
+          if (isOpen && !state.isOpen && typeof document !== "undefined") {
+            // Mutual Exclusivity: Opening Right Main Agent automatically collapses Left Sidebar
+            const wrapper = document.querySelector(
+              '[data-slot="sidebar-wrapper"]'
+            );
+            if (wrapper && wrapper.getAttribute("data-state") === "expanded") {
+              const trigger = document.querySelector(
+                '[data-slot="sidebar-trigger"]'
+              ) as HTMLElement | null;
+              if (trigger) {
+                trigger.click();
+              }
+            }
+          }
+          return { isOpen };
+        }),
       messages: {},
       addMessage: (workspaceId: string, message: AgentMessage) =>
         set((state) => ({

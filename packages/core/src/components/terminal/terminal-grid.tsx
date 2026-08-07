@@ -100,9 +100,7 @@ export function TerminalGrid() {
                   }}
                   initial={{ opacity: 0, scale: 0.95 }}
                   key={pane.id}
-                  layout
                   transition={{
-                    layout: { type: "spring", stiffness: 300, damping: 28 },
                     opacity: { duration: 0.2 },
                     scale: { duration: 0.2 },
                   }}
