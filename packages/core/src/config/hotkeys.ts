@@ -19,6 +19,12 @@ export const hotkeys: HotkeyDefinition[] = [
     category: "general",
   },
   {
+    id: "toggle-agent",
+    keys: "ctrl+`",
+    translationKey: "toggleAgent",
+    category: "general",
+  },
+  {
     id: "new-workspace",
     keys: "mod+n",
     translationKey: "newWorkspace",

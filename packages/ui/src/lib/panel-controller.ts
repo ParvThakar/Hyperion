@@ -41,7 +41,27 @@ function updateState(
 }
 
 function closePanel(panel: PanelId) {
+  if (
+    currentState.pendingPanel !== null ||
+    currentState.transitionTimer !== null
+  ) {
+    return;
+  }
+
   clearTransitionTimer();
+
+  const generation = currentState.transitionGeneration + 1;
+  const timeoutId = globalThis.setTimeout(() => {
+    if (currentState.transitionGeneration !== generation) {
+      return;
+    }
+
+    updateState((state) => ({
+      ...state,
+      transitionTimer: null,
+    }));
+  }, PANEL_TRANSITION_MS);
+
   updateState((state) => ({
     ...state,
     openPanels: {
@@ -49,13 +69,14 @@ function closePanel(panel: PanelId) {
       [panel]: false,
     },
     pendingPanel: null,
-    transitionTimer: null,
-    transitionGeneration: state.transitionGeneration + 1,
+    transitionTimer: timeoutId,
+    transitionGeneration: generation,
   }));
 }
 
 function requestPanel(panel: PanelId) {
-  const { openPanels, pendingPanel, transitionGeneration } = currentState;
+  const { openPanels, pendingPanel, transitionTimer, transitionGeneration } =
+    currentState;
   const otherPanel: PanelId = panel === "sidebar" ? "agent" : "sidebar";
 
   if (openPanels[panel]) {
@@ -63,8 +84,8 @@ function requestPanel(panel: PanelId) {
     return;
   }
 
-  if (pendingPanel !== null) {
-    clearTransitionTimer();
+  if (pendingPanel !== null || transitionTimer !== null) {
+    return;
   }
 
   if (openPanels[otherPanel]) {
@@ -103,6 +124,18 @@ function requestPanel(panel: PanelId) {
     return;
   }
 
+  const generation = transitionGeneration + 1;
+  const timeoutId = globalThis.setTimeout(() => {
+    if (currentState.transitionGeneration !== generation) {
+      return;
+    }
+
+    updateState((state) => ({
+      ...state,
+      transitionTimer: null,
+    }));
+  }, PANEL_TRANSITION_MS);
+
   updateState((state) => ({
     ...state,
     openPanels: {
@@ -110,8 +143,8 @@ function requestPanel(panel: PanelId) {
       [panel]: true,
     },
     pendingPanel: null,
-    transitionTimer: null,
-    transitionGeneration: state.transitionGeneration + 1,
+    transitionTimer: timeoutId,
+    transitionGeneration: generation,
   }));
 }
 
