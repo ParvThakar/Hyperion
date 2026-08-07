@@ -1,27 +1,74 @@
 "use client";
 
+import { usePathname } from "@workspace/i18n/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { usePathname } from "next/navigation";
+import { useRef } from "react";
+
+// Ordered navbar sequence for determining directional transition
+const NAV_ORDER = ["/", "/features", "/docs", "/about", "/news", "/download"];
+
+function getNavIndex(pathname: string): number {
+  // Strip trailing slashes and query strings for index matching
+  const cleanPath = pathname.split("?")[0]?.replace(/\/$/, "") || "/";
+
+  const index = NAV_ORDER.findIndex((item) => {
+    if (item === "/") {
+      return cleanPath === "" || cleanPath === "/";
+    }
+    return cleanPath === item || cleanPath.startsWith(`${item}/`);
+  });
+
+  return index === -1 ? NAV_ORDER.length : index;
+}
+
+const variants = {
+  initial: (direction: number) => ({
+    opacity: 0,
+    x: direction > 0 ? "20%" : "-20%",
+  }),
+  animate: {
+    opacity: 1,
+    x: 0,
+  },
+  exit: (direction: number) => ({
+    opacity: 0,
+    x: direction > 0 ? "-20%" : "20%",
+  }),
+};
 
 export function PageTransition({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const reduceMotion = useReducedMotion();
+
+  const prevIndexRef = useRef<number>(getNavIndex(pathname));
+  const currentIndex = getNavIndex(pathname);
+
+  // Compute direction: > 0 means moving rightwards in nav, < 0 means moving leftwards
+  let direction = currentIndex - prevIndexRef.current;
+  if (direction === 0) {
+    direction = 1; // Default fallback direction if same index
+  }
+
+  // Update ref for next render cycle
+  prevIndexRef.current = currentIndex;
 
   if (reduceMotion) {
     return <>{children}</>;
   }
 
   return (
-    <AnimatePresence initial={false} mode="wait">
+    <AnimatePresence custom={direction} initial={false} mode="wait">
       <motion.div
-        animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-        exit={{ opacity: 0, y: -40, filter: "blur(6px)" }}
-        initial={{ opacity: 0, y: 50, filter: "blur(6px)" }}
+        animate="animate"
+        custom={direction}
+        exit="exit"
+        initial="initial"
         key={pathname}
         transition={{
-          duration: 0.45,
-          ease: [0.22, 1, 0.36, 1],
+          duration: 0.4,
+          ease: [0.25, 1, 0.5, 1],
         }}
+        variants={variants}
       >
         {children}
       </motion.div>

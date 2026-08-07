@@ -35,6 +35,7 @@ import {
 import { Kbd } from "@workspace/ui/components/kbd";
 import { useSidebar } from "@workspace/ui/components/sidebar";
 import { useIsMobile } from "@workspace/ui/hooks/use-mobile";
+import { panelController } from "@workspace/ui/lib/panel-controller";
 import { cn } from "@workspace/ui/lib/utils";
 import {
   CornerDownLeftIcon,
@@ -44,6 +45,7 @@ import {
   PanelLeft,
   Plus,
   Settings,
+  Sparkles,
   Terminal,
 } from "lucide-react";
 import React, { useCallback, useState } from "react";
@@ -199,6 +201,16 @@ export function CommandPalette({
                 {getKeysDisplay("toggle-sidebar")}
               </CommandMenuItem>
             )}
+
+            <CommandMenuItem
+              onSelect={() =>
+                runCommand(() => panelController.togglePanel("agent"))
+              }
+            >
+              <Sparkles />
+              <span>{t("toggleAgent")}</span>
+              {getKeysDisplay("toggle-agent")}
+            </CommandMenuItem>
 
             {!isMobile && (
               <CommandMenuItem

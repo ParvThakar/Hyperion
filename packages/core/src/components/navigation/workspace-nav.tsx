@@ -84,7 +84,6 @@ export function WorkspaceNav({ navigate, onNewWorkspace }: WorkspaceNavProps) {
   const pinnedWorkspaces = workspaces.filter((w) => w.isPinned);
   const regularWorkspaces = workspaces.filter((w) => !w.isPinned);
 
-  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Self-contained item renderer
   const renderWorkspaceItem = (ws: Workspace) => {
     const isActive = ws.id === activeWorkspaceId;
     return (
@@ -120,17 +119,18 @@ export function WorkspaceNav({ navigate, onNewWorkspace }: WorkspaceNavProps) {
               className={cn(
                 "relative h-9 w-full justify-start gap-2 rounded-md transition-all duration-200 ease-out group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-2",
                 isActive
-                  ? "bg-primary font-medium text-primary-foreground shadow-sm hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                  ? "bg-primary font-medium text-primary-foreground shadow-sm hover:bg-primary/90 hover:text-primary-foreground"
                   : "bg-transparent font-medium text-muted-foreground hover:bg-muted/50 hover:text-foreground"
               )}
               isActive={isActive}
               onClick={() => handleSelect(ws.id)}
+              tooltip={ws.name}
             >
               <Terminal
                 className={cn(
                   "size-4 shrink-0 transition-all duration-200",
                   isActive
-                    ? "text-primary-foreground group-hover/menu-button:text-sidebar-accent-foreground"
+                    ? "text-primary-foreground"
                     : "text-muted-foreground/60 group-hover/menu-button:text-foreground/80"
                 )}
               />
@@ -143,7 +143,7 @@ export function WorkspaceNav({ navigate, onNewWorkspace }: WorkspaceNavProps) {
                 className={cn(
                   "flex h-4 min-w-[16px] shrink-0 items-center justify-center rounded-full px-1 font-bold font-mono text-[10px] transition-all duration-200 group-data-[collapsible=icon]:hidden",
                   isActive
-                    ? "bg-primary-foreground/20 text-primary-foreground group-hover/menu-button:bg-sidebar-accent-foreground/20 group-hover/menu-button:text-sidebar-accent-foreground"
+                    ? "bg-primary-foreground/20 text-primary-foreground"
                     : "bg-muted text-muted-foreground/70 group-hover/menu-button:bg-muted/80"
                 )}
               >
@@ -155,9 +155,9 @@ export function WorkspaceNav({ navigate, onNewWorkspace }: WorkspaceNavProps) {
               <DropdownMenuTrigger asChild={true}>
                 <SidebarMenuAction
                   className={cn(
-                    "!right-2.5 !top-2 opacity-0 transition-all duration-200 group-hover/item:opacity-100",
+                    "!right-2 !top-1.5 size-6 rounded-md opacity-0 transition-all duration-200 group-hover/item:opacity-100 aria-expanded:opacity-100",
                     isActive
-                      ? "!text-primary-foreground hover:!bg-black/10 aria-expanded:!bg-black/10 group-hover/item:!text-sidebar-accent-foreground group-hover/item:hover:!bg-white/10 group-hover/item:aria-expanded:!bg-white/10"
+                      ? "!text-primary-foreground/70 hover:!text-primary-foreground hover:!bg-primary-foreground/15 aria-expanded:!bg-primary-foreground/15 aria-expanded:!text-primary-foreground group-hover/item:!text-primary-foreground/70"
                       : "text-muted-foreground hover:bg-muted hover:text-foreground"
                   )}
                   showOnHover={true}
@@ -251,15 +251,15 @@ export function WorkspaceNav({ navigate, onNewWorkspace }: WorkspaceNavProps) {
         <SidebarMenuItem className="px-1.5">
           <SidebarMenuButton
             className={cn(
-              "w-full justify-start gap-2.5 rounded-lg border px-3 py-5 font-semibold transition-all duration-300 ease-out active:scale-[0.98] group-data-[collapsible=icon]:p-2",
-              "border-primary/20 bg-gradient-to-r from-primary/10 to-primary/5 text-primary shadow-[0_4px_12px_-4px_rgba(255,224,194,0.06)] hover:border-primary/45 hover:from-primary/15 hover:to-primary/8 hover:shadow-[0_4px_16px_rgba(255,224,194,0.12)]"
+              "relative h-9 w-full justify-start gap-2.5 rounded-md border font-semibold transition-all duration-200 ease-out active:scale-[0.97]",
+              "border-primary/25 bg-primary/10 text-primary shadow-xs hover:border-primary/45 hover:bg-primary/15 hover:text-primary",
+              "group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-0"
             )}
             onClick={onNewWorkspace}
+            tooltip="New Workspace"
           >
-            <div className="flex size-5 shrink-0 items-center justify-center rounded bg-primary/10 transition-transform duration-300 group-hover:scale-110">
-              <Plus className="size-4 text-primary" />
-            </div>
-            <span className="select-none font-bold text-[10px] uppercase tracking-widest group-data-[collapsible=icon]:hidden">
+            <Plus className="size-4 shrink-0 transition-transform duration-200 ease-out group-hover/menu-button:rotate-90 group-hover/menu-button:scale-110" />
+            <span className="select-none font-semibold text-xs uppercase tracking-wider group-data-[collapsible=icon]:hidden">
               New Workspace
             </span>
           </SidebarMenuButton>

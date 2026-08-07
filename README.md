@@ -1,4 +1,4 @@
-<div align="center">
+git add <div align="center">
 
 # 🪐 Hyperion
 
@@ -408,7 +408,7 @@ git commit -m "feat: add workspace switching"
 git push origin feat/my-feature
 ```
 
--
+---
 
 ## License
 

@@ -1,10 +1,9 @@
 "use client";
 
+import { Link, usePathname } from "@workspace/i18n/navigation";
 import { cn } from "@workspace/ui/lib/utils";
 import { Github, Menu, X } from "lucide-react";
 import Image from "next/image";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { CtaLink } from "./marketing-kit";
 

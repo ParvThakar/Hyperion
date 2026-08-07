@@ -39,6 +39,8 @@ pub fn run() {
       terminal::resize_terminal,
       terminal::get_terminal_history,
       terminal::close_terminal,
+      terminal::is_terminal_busy,
+      terminal::reset_terminal,
       ai::call_llm_stream,
       orchestrator::start_orchestration,
       orchestrator::register_terminal,

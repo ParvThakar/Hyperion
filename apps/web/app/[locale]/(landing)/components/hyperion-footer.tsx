@@ -1,8 +1,8 @@
 "use client";
 
+import { Link } from "@workspace/i18n/navigation";
 import { Github, Linkedin, Twitter } from "lucide-react";
 import { Unbounded } from "next/font/google";
-import Link from "next/link";
 import { BorderTrace } from "./border-trace";
 import { FooterWordmark } from "./footer-wordmark";
 

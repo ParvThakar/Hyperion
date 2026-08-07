@@ -22,30 +22,24 @@ export interface Dev {
 }
 
 /** Shared avatar — photo when provided, initials disc otherwise. */
-function DevAvatar({
-  className,
-  dev,
-  size = "size-20",
-}: {
-  className?: string;
-  dev: Dev;
-  size?: string;
-}) {
+function DevAvatar({ className, dev }: { className?: string; dev: Dev }) {
   if (dev.photoUrl) {
     return (
-      // biome-ignore lint/performance/noImgElement: avatar source is per-dev user content, not a static build asset next/image would optimize
       <img
         alt={dev.name}
-        className={cn(size, "rounded-full object-cover", className)}
+        className={cn(
+          "h-48 w-auto object-contain drop-shadow-[0_0_30px_rgba(255,255,255,0.15)]",
+          className
+        )}
         src={dev.photoUrl}
       />
     );
   }
+
   return (
     <div
       className={cn(
-        size,
-        "flex items-center justify-center rounded-full border border-border bg-secondary font-display text-2xl text-muted-foreground",
+        "flex h-20 w-20 items-center justify-center rounded-full border border-border bg-secondary font-display text-2xl text-muted-foreground",
         className
       )}
     >
@@ -90,11 +84,20 @@ function DevCard({
       {/* idle silhouette — the only thing visible before interaction */}
       <span
         aria-hidden={true}
-        className="pointer-events-none absolute select-none font-display text-7xl text-foreground/[0.18] transition-opacity duration-200 ease-out group-hover/devcard:opacity-0 group-focus-visible/devcard:opacity-0 sm:text-8xl"
+        className="pointer-events-none absolute transition-opacity duration-300 ease-out group-hover/devcard:opacity-0 group-focus-visible/devcard:opacity-0"
       >
-        {dev.initials}
+        {dev.photoUrl ? (
+          <img
+            alt={dev.name}
+            className="h-[460px] w-auto object-contain opacity-60 grayscale brightness-110 transition-all duration-300 group-hover/devcard:opacity-0"
+            src={dev.photoUrl}
+          />
+        ) : (
+          <span className="font-display text-8xl text-foreground/[0.18]">
+            {dev.initials}
+          </span>
+        )}
       </span>
-
       {/* glass overlay — only exists once hovered/focused */}
       <span
         aria-hidden={true}
@@ -103,11 +106,7 @@ function DevCard({
 
       {/* revealed identity — fade, lift, and un-blur together */}
       <div className="relative flex translate-y-3 flex-col items-center px-6 opacity-0 blur-[3px] transition-all duration-200 ease-out group-hover/devcard:translate-y-0 group-hover/devcard:opacity-100 group-hover/devcard:blur-none group-focus-visible/devcard:translate-y-0 group-focus-visible/devcard:opacity-100 group-focus-visible/devcard:blur-none">
-        <DevAvatar
-          className="border-primary/30"
-          dev={dev}
-          size="size-14 sm:size-16"
-        />
+        <DevAvatar className="border-primary/30" dev={dev} />
         <p className="mt-4 font-medium text-foreground text-sm">{dev.name}</p>
         <p className="mt-1 text-muted-foreground text-xs">{dev.role}</p>
         <p className="mt-3 hidden max-w-[15rem] text-[0.7rem] text-muted-foreground/70 leading-relaxed sm:block">
