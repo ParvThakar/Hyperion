@@ -1,8 +1,8 @@
-import { routing } from "@workspace/i18n/routing";
 import { redirect } from "next/navigation";
 
-// Required root page — immediately redirects to the default locale.
-// The [locale]/layout.tsx handles the actual <html>/<body> shell.
+// Root page — redirects to the app's entry point.
+// With localePrefix: "as-needed", the default locale (en)
+// is invisible in the URL so we redirect straight to /.
 export default function RootPage() {
-  redirect(`/${routing.defaultLocale}`);
+  redirect("/workspace");
 }

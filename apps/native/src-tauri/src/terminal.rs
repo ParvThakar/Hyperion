@@ -276,6 +276,7 @@ fn has_child_processes(parent_pid: u32) -> bool {
     const MAX_PATH: usize = 260;
 
     #[repr(C)]
+    #[allow(non_snake_case)]
     struct PROCESSENTRY32W {
         dwSize: DWORD,
         cntUsage: DWORD,
