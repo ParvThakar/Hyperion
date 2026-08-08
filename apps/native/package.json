@@ -4,7 +4,7 @@
   "version": "0.0.1",
   "type": "module",
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --port 1420",
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
