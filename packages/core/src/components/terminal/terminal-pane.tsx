@@ -75,6 +75,12 @@ function handleSingleEvent(
 ) {
   const offset = payload.offset;
   const data = payload.data;
+
+  // Reset offset tracker if incoming stream starts from byte 0 (fresh shell session after reset)
+  if (offset === 0) {
+    currentOffsetRef.current = 0;
+  }
+
   const currentOffset = currentOffsetRef.current;
 
   if (offset + data.length <= currentOffset) {
@@ -381,12 +387,11 @@ export function TerminalPane({
   const [isResetDialogOpen, setIsResetDialogOpen] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
   const isResettingRef = useRef<boolean>(false);
-  const [activeSessionId, setActiveSessionId] = useState<string>(id);
-  const activeSessionIdRef = useRef<string>(id);
 
+  const idRef = useRef(id);
   useEffect(() => {
-    activeSessionIdRef.current = activeSessionId;
-  }, [activeSessionId]);
+    idRef.current = id;
+  }, [id]);
 
   // Active terminal pane state & registry registration
   const activeWorkspaceId = useWorkspaceStore((s) => s.activeWorkspaceId);
@@ -423,9 +428,7 @@ export function TerminalPane({
 
   const doFit = useCallback(() => {
     if (
-      !fitAddonRef.current ||
-      !termRef.current ||
-      !containerRef.current ||
+      !(fitAddonRef.current && termRef.current && containerRef.current) ||
       containerRef.current.clientWidth === 0 ||
       containerRef.current.clientHeight === 0
     ) {
@@ -451,14 +454,14 @@ export function TerminalPane({
       .then(({ isTauri, invoke }) => {
         if (isTauri()) {
           invoke("resize_terminal", {
-            id: activeSessionIdRef.current,
+            id,
             cols,
             rows,
           }).catch(() => {});
         }
       })
       .catch(() => {});
-  }, []);
+  }, [id]);
 
   useEffect(() => {
     terminalRegistry.register(id, {
@@ -629,7 +632,7 @@ export function TerminalPane({
         return { isTauriActive: false };
       }
 
-      const currentSessionId = activeSessionId;
+      const currentSessionId = id;
 
       // 1. Listen for stdout events first to avoid race conditions and lost bytes
       unlistenStdout = await listen<TerminalEventPayload>(
@@ -715,11 +718,7 @@ export function TerminalPane({
           { id: currentSessionId }
         ).catch(() => null);
 
-        if (
-          historyInfo &&
-          historyInfo.history &&
-          historyInfo.history.length > 0
-        ) {
+        if (historyInfo?.history && historyInfo.history.length > 0) {
           break;
         }
         await new Promise((resolve) => setTimeout(resolve, 25));
@@ -780,13 +779,7 @@ export function TerminalPane({
       }
 
       if (res.isTauriActive) {
-        executeTauriAutoCommand(
-          activeSessionId,
-          autoCommand,
-          res.isNew,
-          disposed,
-          index
-        );
+        executeTauriAutoCommand(id, autoCommand, res.isNew, disposed, index);
       } else if (!disposed) {
         setupMockShell(term);
         executeMockAutoCommand(term, autoCommand, directory, handleMockCommand);
@@ -887,7 +880,6 @@ export function TerminalPane({
       }
     };
   }, [
-    activeSessionId,
     id,
     mounted,
     setupMockShell,
@@ -1032,7 +1024,7 @@ export function TerminalPane({
             .then(({ isTauri, invoke }) => {
               if (isTauri()) {
                 invoke("resize_terminal", {
-                  id: activeSessionIdRef.current,
+                  id: idRef.current,
                   cols,
                   rows,
                 }).catch(() => {});
@@ -1081,23 +1073,20 @@ export function TerminalPane({
       isResettingRef.current = true;
       setIsResetting(true);
 
-      const oldSessionId = activeSessionIdRef.current;
-      const nextSessionId = `${id}-${Date.now()}`;
-
       // 1. Reset frontend data tracking refs
       isInitializedRef.current = false;
       currentOffsetRef.current = 0;
       pendingEventsRef.current = [];
       inputBufferRef.current = "";
 
-      // 2. Clear active task tracking for old session
+      // 2. Clear active task tracking for session
       if (typeof window !== "undefined") {
         const activeTaskRef = (
           window as unknown as Record<
             string,
             { current: { id: string; command: string; output: string } | null }
           >
-        )[`activeTask_${oldSessionId}`];
+        )[`activeTask_${id}`];
         if (activeTaskRef) {
           activeTaskRef.current = null;
         }
@@ -1113,23 +1102,68 @@ export function TerminalPane({
       if (isTauriEnv) {
         const { invoke } = await import("@tauri-apps/api/core");
 
-        // Force-kill old backend process tree immediately
-        await invoke("close_terminal", { id: oldSessionId }).catch(() => {});
+        let cols = term?.cols && term.cols > 0 ? term.cols : 80;
+        let rows = term?.rows && term.rows > 0 ? term.rows : 24;
+        if (fitAddonRef.current) {
+          const dims = fitAddonRef.current.proposeDimensions();
+          if (dims && dims.cols > 0 && dims.rows > 0) {
+            cols = dims.cols;
+            rows = dims.rows;
+            fitAddonRef.current.fit();
+          }
+        }
+
+        const historyInfo = await invoke<TerminalHistoryInfo>(
+          "reset_terminal",
+          { id, cols, rows, cwd }
+        ).catch(() => null);
+
+        if (term && historyInfo) {
+          if (historyInfo.history) {
+            term.write(historyInfo.history);
+            currentOffsetRef.current = historyInfo.total_read;
+          } else {
+            currentOffsetRef.current = 0;
+          }
+          term.write("\x1b[?25h");
+        } else {
+          currentOffsetRef.current = 0;
+        }
+        isInitializedRef.current = true;
+      } else if (term) {
+        // Mock Shell (Web) environment reset
+        term.writeln("\x1b[1;35mHyperion Web Shell Terminal\x1b[0m");
+        term.writeln(
+          "Interactive mock sandbox active. Try: \x1b[1;36mneofetch\x1b[0m, \x1b[1;36mhelp\x1b[0m, \x1b[1;36mclear\x1b[0m.\r\n"
+        );
+        term.write("\x1b[1;32mhyperion-demo@web:~$\x1b[0m ");
+        if (autoCommand) {
+          executeMockAutoCommand(
+            term,
+            autoCommand,
+            directory,
+            handleMockCommand
+          );
+        }
+        isInitializedRef.current = true;
       }
 
-      // 4. Update session ID -> triggers setup effect for nextSessionId cleanly!
-      activeSessionIdRef.current = nextSessionId;
-      setActiveSessionId(nextSessionId);
+      // 4. Focus terminal after reset so user can immediately type
+      if (term) {
+        term.focus();
+      }
+      terminalRegistry.focusTerminal(id);
 
       toast.success("Shell session reset", {
         description: "Terminated processes and created a fresh terminal.",
       });
     } catch {
       toast.error("Failed to reset shell session");
+    } finally {
       isResettingRef.current = false;
       setIsResetting(false);
     }
-  }, [id, isTauriEnv]);
+  }, [id, cwd, autoCommand, directory, handleMockCommand, isTauriEnv]);
 
   const handleResetButtonClick = useCallback(async () => {
     if (isResetting) {
@@ -1141,7 +1175,7 @@ export function TerminalPane({
       try {
         const { invoke } = await import("@tauri-apps/api/core");
         isBusy = await invoke<boolean>("is_terminal_busy", {
-          id: activeSessionIdRef.current,
+          id,
         });
       } catch {
         isBusy = false;
@@ -1152,7 +1186,7 @@ export function TerminalPane({
           string,
           { current: { id: string; command: string; output: string } | null }
         >
-      )[`activeTask_${activeSessionIdRef.current}`];
+      )[`activeTask_${id}`];
       isBusy = Boolean(activeTaskRef?.current);
     }
 
@@ -1161,7 +1195,7 @@ export function TerminalPane({
     } else {
       executeResetSession();
     }
-  }, [executeResetSession, isResetting, isTauriEnv]);
+  }, [executeResetSession, isResetting, isTauriEnv, id]);
 
   // ─── Image paste handler for fullscreen mode ───
   const handleImagePaste = useCallback((e: React.ClipboardEvent) => {

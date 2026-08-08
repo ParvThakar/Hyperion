@@ -19,7 +19,6 @@ export function AeonConsole({
     return null;
   }
 
-
   return (
     <div className="relative z-30 flex w-full flex-col items-center gap-6 px-4 pb-12 sm:pb-16">
       {/* ── Active Info Block (Decrypted) ── */}
