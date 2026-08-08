@@ -10,14 +10,13 @@ import {
   type TaskResult,
 } from "@workspace/core/lib/orchestrator-client";
 import { ProviderFactory } from "@workspace/core/lib/providers/provider-factory";
-
+import { terminalRegistry } from "@workspace/core/lib/terminal-registry";
 import { safeUUID } from "@workspace/core/lib/uuid";
 import {
   type AgentMessage,
   type TerminalState,
   useAgentStore,
 } from "@workspace/core/stores/agent-store";
-import { terminalRegistry } from "@workspace/core/lib/terminal-registry";
 import { useWorkspaceStore } from "@workspace/core/stores/workspace-store";
 import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";

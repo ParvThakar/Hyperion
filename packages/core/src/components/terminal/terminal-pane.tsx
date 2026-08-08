@@ -423,9 +423,7 @@ export function TerminalPane({
 
   const doFit = useCallback(() => {
     if (
-      !fitAddonRef.current ||
-      !termRef.current ||
-      !containerRef.current ||
+      !(fitAddonRef.current && termRef.current && containerRef.current) ||
       containerRef.current.clientWidth === 0 ||
       containerRef.current.clientHeight === 0
     ) {
