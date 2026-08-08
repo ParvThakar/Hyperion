@@ -34,6 +34,7 @@ export function SignUpPage() {
           },
         }}
         routing="hash"
+        signInUrl="/sign-in"
       />
     </div>
   );

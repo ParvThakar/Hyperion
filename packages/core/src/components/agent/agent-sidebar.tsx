@@ -1,5 +1,6 @@
 "use client";
 
+import { useUser } from "@clerk/clerk-react";
 import {
   addIteration,
   cancelOrchestration,
@@ -10,15 +11,20 @@ import {
   type TaskResult,
 } from "@workspace/core/lib/orchestrator-client";
 import { ProviderFactory } from "@workspace/core/lib/providers/provider-factory";
-
+import { terminalRegistry } from "@workspace/core/lib/terminal-registry";
 import { safeUUID } from "@workspace/core/lib/uuid";
 import {
   type AgentMessage,
   type TerminalState,
   useAgentStore,
 } from "@workspace/core/stores/agent-store";
-import { terminalRegistry } from "@workspace/core/lib/terminal-registry";
+import { useAuthStore } from "@workspace/core/stores/auth-store";
 import { useWorkspaceStore } from "@workspace/core/stores/workspace-store";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@workspace/ui/components/avatar";
 import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
 import { ScrollArea } from "@workspace/ui/components/scroll-area";
@@ -47,7 +53,6 @@ import {
   Square,
   TerminalSquare,
   Trash2,
-  User,
   X,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
@@ -57,6 +62,67 @@ import remarkGfm from "remark-gfm";
 import { toast } from "sonner";
 
 const MAX_ITERATIONS = 20;
+
+const hasClerkPublishableKey = !!(
+  typeof process !== "undefined" &&
+  process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+);
+
+const isNativeApp =
+  typeof process !== "undefined" &&
+  process.env.NEXT_PUBLIC_IS_NATIVE === "true";
+
+function ClerkUserAvatar() {
+  const { user, isLoaded } = useUser();
+  const displayUser =
+    isLoaded && user
+      ? {
+          name: user.fullName || user.username || "User",
+          avatar: user.imageUrl,
+        }
+      : null;
+  const initial = (displayUser?.name || "U").charAt(0).toUpperCase();
+
+  return (
+    <Avatar className="size-8 shrink-0 overflow-hidden rounded-lg border border-border/40">
+      {displayUser?.avatar && (
+        <AvatarImage alt={displayUser.name} src={displayUser.avatar} />
+      )}
+      <AvatarFallback className="rounded-lg bg-gradient-to-br from-amber-600 to-orange-700 font-bold text-white text-xs">
+        {initial}
+      </AvatarFallback>
+    </Avatar>
+  );
+}
+
+function NativeUserAvatar() {
+  const { session } = useAuthStore();
+  const displayUser = session
+    ? {
+        name: session.name || session.email?.split("@")[0] || "User",
+        avatar: session.avatar,
+      }
+    : null;
+  const initial = (displayUser?.name || "U").charAt(0).toUpperCase();
+
+  return (
+    <Avatar className="size-8 shrink-0 overflow-hidden rounded-lg border border-border/40">
+      {displayUser?.avatar && (
+        <AvatarImage alt={displayUser.name} src={displayUser.avatar} />
+      )}
+      <AvatarFallback className="rounded-lg bg-gradient-to-br from-amber-600 to-orange-700 font-bold text-white text-xs">
+        {initial}
+      </AvatarFallback>
+    </Avatar>
+  );
+}
+
+function UserAvatarIcon() {
+  if (!isNativeApp && hasClerkPublishableKey) {
+    return <ClerkUserAvatar />;
+  }
+  return <NativeUserAvatar />;
+}
 
 function buildPlanningSystemPrompt(
   panes: { id: string; title: string; name?: string }[]
@@ -1162,20 +1228,13 @@ export function AgentSidebar() {
                       )}
                       key={msg.id}
                     >
-                      <div
-                        className={cn(
-                          "flex size-8 shrink-0 items-center justify-center rounded-lg border",
-                          msg.role === "user"
-                            ? "border-primary/20 bg-primary/10 text-primary"
-                            : "border-border/40 bg-muted text-foreground"
-                        )}
-                      >
-                        {msg.role === "user" ? (
-                          <User className="size-4" />
-                        ) : (
+                      {msg.role === "user" ? (
+                        <UserAvatarIcon />
+                      ) : (
+                        <div className="flex size-8 shrink-0 items-center justify-center rounded-lg border border-border/40 bg-muted text-foreground">
                           <Sparkles className="size-4" />
-                        )}
-                      </div>
+                        </div>
+                      )}
                       <div className="flex max-w-[80%] flex-col gap-1.5">
                         <div
                           className={cn(
@@ -1214,7 +1273,14 @@ export function AgentSidebar() {
                               </div>
                             </div>
                           ) : (
-                            <div className="prose prose-invert max-w-none break-words leading-relaxed [&_a]:text-primary [&_h1]:mb-2 [&_h1]:text-sm [&_h2]:mb-2 [&_h2]:text-sm [&_h3]:mb-1 [&_h3]:text-xs [&_h4]:text-xs [&_li]:text-xs [&_p]:text-xs [&_pre]:my-2 [&_pre]:rounded-md [&_pre]:bg-muted [&_pre]:p-2 [&_pre]:text-[10px] [&_pre]:shadow-inner [&_strong]:text-foreground">
+                            <div
+                              className={cn(
+                                "prose max-w-none break-words leading-relaxed [&_a]:text-primary [&_h1]:mb-2 [&_h1]:text-sm [&_h2]:mb-2 [&_h2]:text-sm [&_h3]:mb-1 [&_h3]:text-xs [&_h4]:text-xs [&_li]:text-xs [&_p]:text-xs [&_pre]:my-2 [&_pre]:rounded-md [&_pre]:bg-muted [&_pre]:p-2 [&_pre]:text-[10px] [&_pre]:shadow-inner",
+                                msg.role === "user"
+                                  ? "text-primary-foreground [&_code]:!text-primary-foreground [&_h1]:!text-primary-foreground [&_h2]:!text-primary-foreground [&_h3]:!text-primary-foreground [&_li]:!text-primary-foreground [&_p]:!text-primary-foreground [&_strong]:!text-primary-foreground"
+                                  : "prose-invert text-foreground [&_strong]:text-foreground"
+                              )}
+                            >
                               <ReactMarkdown remarkPlugins={[remarkGfm]}>
                                 {msg.content}
                               </ReactMarkdown>
@@ -1339,7 +1405,7 @@ export function AgentSidebar() {
                     onValueChange={setTargetTerminalId}
                     value={targetTerminalId}
                   >
-                    <SelectTrigger className="h-7 w-[160px] border-border/40 bg-background text-xs shadow-none">
+                    <SelectTrigger className="h-7 w-auto gap-2 border-border/40 bg-background text-xs shadow-none px-2.5">
                       <div className="flex items-center gap-1.5">
                         <TerminalSquare className="size-3.5 opacity-70" />
                         <SelectValue placeholder="Target Terminal" />

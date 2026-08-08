@@ -47,7 +47,7 @@ export function useTerminalHotkeys() {
       const activeWorkspace = workspaces.find(
         (w) => w.id === activeWorkspaceId
       );
-      if (!(activeWorkspace && activeWorkspace.panes)) {
+      if (!activeWorkspace?.panes) {
         return;
       }
 
