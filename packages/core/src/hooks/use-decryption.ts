@@ -2,17 +2,24 @@
 
 import { useEffect, useState } from "react";
 
-const CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%&*!";
+const GLYPHS = "ABCDEF0123456789!@#$%^&*()_+-=[]{}|;:,.<>?/~";
 
+/**
+ * Sci-fi text decryption effect hook that progressively reveals target text.
+ *
+ * @param text The target text to decrypt/reveal.
+ * @param trigger State/value change that re-triggers the animation.
+ * @param duration Total duration of the animation in milliseconds.
+ */
 export function useDecryption(
-  targetText: string,
+  text: string,
   trigger: unknown,
   duration = 600
 ): string {
-  const [displayText, setDisplayText] = useState(targetText);
+  const [displayText, setDisplayText] = useState(text);
 
   useEffect(() => {
-    if (!targetText) {
+    if (!text) {
       setDisplayText("");
       return;
     }
@@ -20,39 +27,42 @@ export function useDecryption(
     let animationFrameId: number;
     const startTime = performance.now();
 
-    const update = (now: number) => {
-      const elapsed = now - startTime;
+    const animate = (currentTime: number) => {
+      const elapsed = currentTime - startTime;
       const progress = Math.min(elapsed / duration, 1);
-      const revealedLength = Math.floor(progress * targetText.length);
+      const revealedCount = Math.floor(progress * text.length);
 
-      const scrambled = targetText
+      const nextText = text
         .split("")
         .map((char, index) => {
           if (char === " ") {
             return " ";
           }
-          if (index < revealedLength) {
+          if (index < revealedCount) {
             return char;
           }
-          return CHARS[Math.floor(Math.random() * CHARS.length)];
+          const randomGlyph = GLYPHS[Math.floor(Math.random() * GLYPHS.length)];
+          return randomGlyph ?? char;
         })
         .join("");
 
-      setDisplayText(scrambled);
+      setDisplayText(nextText);
 
       if (progress < 1) {
-        animationFrameId = requestAnimationFrame(update);
+        animationFrameId = requestAnimationFrame(animate);
       } else {
-        setDisplayText(targetText);
+        setDisplayText(text);
       }
     };
 
-    animationFrameId = requestAnimationFrame(update);
+    animationFrameId = requestAnimationFrame(animate);
 
     return () => {
-      cancelAnimationFrame(animationFrameId);
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
     };
-  }, [targetText, trigger, duration]);
+  }, [text, trigger, duration]);
 
   return displayText;
 }
