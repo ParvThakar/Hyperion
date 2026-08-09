@@ -1,6 +1,6 @@
 "use client";
 
-import { AeonInterface } from "../components/aeon-interface";
+import { AgentSelect } from "../components/agent-select/agent-select";
 import type { Dev } from "../components/dev-cards";
 
 const devs: Dev[] = [
@@ -67,5 +67,5 @@ const devs: Dev[] = [
 ];
 
 export default function DevsPage() {
-  return <AeonInterface devs={devs} />;
+  return <AgentSelect devs={devs} />;
 }
