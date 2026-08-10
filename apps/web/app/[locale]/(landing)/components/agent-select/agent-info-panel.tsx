@@ -38,16 +38,16 @@ export function AgentInfoPanel({ dev, agentId, index }: AgentInfoPanelProps) {
     <div className="w-full max-w-[480px]">
       <AnimatePresence mode="wait">
         <motion.div
-          className="relative flex w-full flex-col items-start rounded-2xl border border-white/10 bg-zinc-950/80 p-5 text-left shadow-[0_0_50px_rgba(0,0,0,0.9),0_0_20px_rgba(255,255,255,0.02)] backdrop-blur-2xl sm:p-6"
+          className="relative flex w-full flex-col items-start rounded-2xl border border-[#3A3A3A] bg-[#080705]/95 p-5 text-left shadow-[0_0_60px_rgba(0,0,0,0.95)] backdrop-blur-2xl sm:p-6"
           key={dev.name}
         >
-          {/* Top Sci-Fi Accent Line */}
-          <div className="absolute inset-x-0 top-0 h-0.5 rounded-t-2xl bg-gradient-to-r from-transparent via-emerald-400/80 to-transparent" />
+          {/* Top Sci-Fi Accent Line (Monochromatic Platinum) */}
+          <div className="absolute inset-x-0 top-0 h-0.5 rounded-t-2xl bg-gradient-to-r from-transparent via-[#EEEEED]/30 to-transparent" />
 
-          {/* Agent Tag */}
+          {/* Dev Designation Tag */}
           <motion.div
             animate="animate"
-            className="mb-1 font-mono text-[0.5rem] uppercase tracking-[0.4em] text-emerald-400"
+            className="mb-1 font-mono text-[0.5rem] uppercase tracking-[0.4em] text-[#EEEEED]/60"
             custom={0}
             exit="exit"
             initial="initial"
@@ -59,7 +59,7 @@ export function AgentInfoPanel({ dev, agentId, index }: AgentInfoPanelProps) {
           {/* Name */}
           <motion.h2
             animate="animate"
-            className="font-display text-xl font-bold tracking-tight text-white sm:text-2xl"
+            className="font-display text-xl font-bold tracking-tight text-[#EEEEED] sm:text-2xl"
             custom={60}
             exit="exit"
             initial="initial"
@@ -83,7 +83,7 @@ export function AgentInfoPanel({ dev, agentId, index }: AgentInfoPanelProps) {
           {/* Divider */}
           <motion.div
             animate="animate"
-            className="my-3.5 h-px w-full bg-white/10"
+            className="my-3.5 h-px w-full bg-[#3A3A3A]/50"
             custom={160}
             exit="exit"
             initial="initial"
@@ -100,7 +100,7 @@ export function AgentInfoPanel({ dev, agentId, index }: AgentInfoPanelProps) {
               initial="initial"
               variants={itemVariants}
             >
-              <span className="mb-1 font-mono text-[0.48rem] uppercase tracking-[0.3em] text-white/30">
+              <span className="mb-1 font-mono text-[0.48rem] uppercase tracking-[0.3em] text-[#EEEEED]/30">
                 DIRECTIVE /&#47; BIO
               </span>
               <p className="text-xs text-white/60 leading-relaxed">{dev.bio}</p>
@@ -114,7 +114,7 @@ export function AgentInfoPanel({ dev, agentId, index }: AgentInfoPanelProps) {
               initial="initial"
               variants={itemVariants}
             >
-              <span className="mb-1 font-mono text-[0.48rem] uppercase tracking-[0.3em] text-white/30">
+              <span className="mb-1 font-mono text-[0.48rem] uppercase tracking-[0.3em] text-[#EEEEED]/30">
                 CORE CONTRIBUTION
               </span>
               <p className="text-xs text-white/60 leading-relaxed">
@@ -134,7 +134,7 @@ export function AgentInfoPanel({ dev, agentId, index }: AgentInfoPanelProps) {
           >
             {dev.skills.map((skill) => (
               <span
-                className="rounded-md border border-white/10 bg-white/5 px-2.5 py-0.5 font-mono text-[0.55rem] tracking-wider text-white/60"
+                className="rounded-md border border-[#3A3A3A] bg-white/5 px-2.5 py-0.5 font-mono text-[0.55rem] tracking-wider text-[#EEEEED]/70"
                 key={skill}
               >
                 {skill}
@@ -153,7 +153,7 @@ export function AgentInfoPanel({ dev, agentId, index }: AgentInfoPanelProps) {
           >
             {dev.github && (
               <a
-                className="rounded-md border border-white/15 bg-white/5 px-3 py-1 font-mono text-[0.55rem] tracking-[0.18em] text-white/70 hover:border-emerald-400/60 hover:bg-emerald-500/10 hover:text-emerald-300 transition-all duration-200"
+                className="rounded-md border border-[#3A3A3A] bg-[#080705]/40 px-3 py-1 font-mono text-[0.55rem] tracking-[0.18em] text-[#EEEEED]/80 transition-all duration-200 hover:border-[#EEEEED]/40 hover:bg-[#EEEEED]/10 hover:text-[#EEEEED]"
                 href={dev.github}
                 rel="noreferrer"
                 target="_blank"
@@ -163,7 +163,7 @@ export function AgentInfoPanel({ dev, agentId, index }: AgentInfoPanelProps) {
             )}
             {dev.linkedin && (
               <a
-                className="rounded-md border border-white/15 bg-white/5 px-3 py-1 font-mono text-[0.55rem] tracking-[0.18em] text-white/70 hover:border-emerald-400/60 hover:bg-emerald-500/10 hover:text-emerald-300 transition-all duration-200"
+                className="rounded-md border border-[#3A3A3A] bg-[#080705]/40 px-3 py-1 font-mono text-[0.55rem] tracking-[0.18em] text-[#EEEEED]/80 transition-all duration-200 hover:border-[#EEEEED]/40 hover:bg-[#EEEEED]/10 hover:text-[#EEEEED]"
                 href={dev.linkedin}
                 rel="noreferrer"
                 target="_blank"

@@ -19,14 +19,14 @@ export function SingleNavButton({
     <button
       aria-label={isPrev ? `Previous agent: ${label}` : `Next agent: ${label}`}
       className={cn(
-        "group relative flex items-center gap-3 rounded-xl border border-white/15 bg-zinc-950/80 px-4 py-2.5 shadow-lg backdrop-blur-xl transition-all duration-200 hover:border-white/40 hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/50 active:scale-95",
+        "group relative flex items-center gap-3 rounded-xl border border-[#3A3A3A] bg-zinc-950/80 px-4 py-2.5 shadow-lg backdrop-blur-xl transition-all duration-200 hover:border-[#EEEEED]/40 hover:bg-[#EEEEED]/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#EEEEED]/50 active:scale-95",
         isPrev ? "text-left" : "text-right"
       )}
       onClick={onClick}
       type="button"
     >
       {isPrev && (
-        <span className="font-mono text-lg text-white/50 transition-transform duration-200 group-hover:-translate-x-1 group-hover:text-white">
+        <span className="font-mono text-lg text-[#EEEEED]/50 transition-transform duration-200 group-hover:-translate-x-1 group-hover:text-[#EEEEED]">
           ‹
         </span>
       )}
@@ -38,7 +38,7 @@ export function SingleNavButton({
       </div>
 
       {!isPrev && (
-        <span className="font-mono text-lg text-white/50 transition-transform duration-200 group-hover:translate-x-1 group-hover:text-white">
+        <span className="font-mono text-lg text-[#EEEEED]/50 transition-transform duration-200 group-hover:translate-x-1 group-hover:text-[#EEEEED]">
           ›
         </span>
       )}

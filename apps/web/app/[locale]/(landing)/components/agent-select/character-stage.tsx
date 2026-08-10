@@ -1,15 +1,27 @@
 "use client";
 
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { cn } from "@workspace/ui/lib/utils";
+import { motion, useReducedMotion } from "motion/react";
 import { useCallback, useRef } from "react";
 import type { Dev } from "../dev-cards";
 
 interface CharacterStageProps {
-  dev: Dev;
-  direction: number;
+  activeDev: Dev;
+  nextDev: Dev;
+  onNext: () => void;
+  onOpenDetails: () => void;
+  onPrev: () => void;
+  prevDev: Dev;
 }
 
-export function CharacterStage({ dev, direction }: CharacterStageProps) {
+export function CharacterStage({
+  activeDev,
+  prevDev,
+  nextDev,
+  onPrev,
+  onNext,
+  onOpenDetails,
+}: CharacterStageProps) {
   const reducedMotion = useReducedMotion();
   const parallaxRef = useRef<HTMLDivElement>(null);
 
@@ -40,103 +52,134 @@ export function CharacterStage({ dev, direction }: CharacterStageProps) {
     }, 500);
   }, []);
 
+  const slots = [
+    { dev: prevDev, role: "prev" as const, onClick: onPrev },
+    { dev: activeDev, role: "active" as const, onClick: onOpenDetails },
+    { dev: nextDev, role: "next" as const, onClick: onNext },
+  ];
+
   return (
-    <div
-      className="relative flex w-full items-center justify-center"
-      onMouseLeave={handleMouseLeave}
-      onMouseMove={handleMouseMove}
-    >
-      <div className="relative z-10 flex h-[50vh] max-h-[500px] w-full items-center justify-center drop-shadow-[0_0_40px_rgba(255,255,255,0.08)] sm:h-[58vh] sm:max-h-[600px] lg:h-[68vh] lg:max-h-[720px]">
-        <AnimatePresence custom={direction} mode="wait">
+    <div className="relative flex h-[50vh] max-h-[500px] w-full max-w-4xl items-center justify-center sm:h-[58vh] sm:max-h-[600px] lg:h-[68vh] lg:max-h-[720px]">
+      {slots.map((slot) => {
+        const isActive = slot.role === "active";
+        const isPrev = slot.role === "prev";
+
+        return (
           <motion.div
             animate={{
-              filter: "blur(0px)",
-              opacity: 1,
-              scale: 1,
-              x: 0,
-              y: 0,
-              transition: {
-                filter: { duration: 0.5 },
-                opacity: { duration: 0.4 },
-                scale: {
-                  damping: 25,
-                  mass: 0.8,
-                  stiffness: 200,
-                  type: "spring",
-                },
-                x: {
-                  damping: 25,
-                  mass: 0.8,
-                  stiffness: 200,
-                  type: "spring",
-                },
-                y: {
-                  damping: 25,
-                  mass: 0.8,
-                  stiffness: 200,
-                  type: "spring",
-                },
-              },
+              opacity: isActive ? 1.0 : 0.25,
+              scale: isActive ? 1.15 : 0.65,
+              x: isPrev ? "-115%" : slot.role === "next" ? "115%" : "0%",
+              zIndex: isActive ? 20 : 10,
             }}
-            className="absolute inset-0 flex items-center justify-center"
-            custom={direction}
-            exit={{
-              filter: "blur(8px)",
-              opacity: 0,
-              scale: 0.92,
-              x: direction > 0 ? -80 : direction < 0 ? 80 : 0,
-              transition: { duration: 0.25, ease: [0.4, 0, 1, 1] },
-            }}
+            className="absolute left-1/2 h-full w-[200px] -translate-x-1/2 sm:w-[240px]"
             initial={{
-              filter: direction === 0 ? "blur(6px)" : "blur(12px)",
               opacity: 0,
-              scale: direction === 0 ? 0.95 : 0.88,
-              x: direction > 0 ? 100 : direction < 0 ? -100 : 0,
-              y: direction === 0 ? 30 : 0,
+              scale: 0.8,
             }}
-            key={dev.name}
+            key={slot.dev.name}
+            layoutId={`stage-slot-${slot.dev.name}`}
+            transition={{
+              damping: 26,
+              mass: 0.9,
+              stiffness: 220,
+              type: "spring",
+            }}
           >
-            <motion.div
-              animate={reducedMotion ? undefined : { y: [0, -6, 0] }}
-              className="h-full w-full"
-              transition={
-                reducedMotion
-                  ? undefined
-                  : {
-                      duration: 4,
-                      ease: "easeInOut",
-                      repeat: Number.POSITIVE_INFINITY,
-                      repeatType: "loop",
-                    }
-              }
+            <button
+              className="group relative flex h-full w-full cursor-pointer flex-col items-center justify-center bg-transparent border-0 p-0 text-inherit focus:outline-none"
+              onClick={slot.onClick}
+              type="button"
             >
-              <div
+              {/* Interactive Parallax Wrapper for Active Figure */}
+              <motion.div
+                animate={
+                  reducedMotion || !isActive ? undefined : { y: [0, -6, 0] }
+                }
                 className="h-full w-full"
-                ref={parallaxRef}
-                style={{ willChange: "transform" }}
+                transition={
+                  reducedMotion || !isActive
+                    ? undefined
+                    : {
+                        duration: 4,
+                        ease: "easeInOut",
+                        repeat: Number.POSITIVE_INFINITY,
+                        repeatType: "loop",
+                      }
+                }
               >
-                {dev.photoUrl ? (
-                  <img
-                    alt={dev.name}
-                    className="h-full w-full select-none object-contain"
-                    draggable={false}
-                    src={dev.photoUrl}
-                  />
-                ) : (
-                  <div className="flex h-full items-center justify-center">
-                    <div className="flex size-40 items-center justify-center rounded-full border border-white/10 bg-white/[0.03] font-display text-6xl text-white/30">
-                      {dev.initials}
+                <div
+                  className="h-full w-full"
+                  onMouseLeave={isActive ? handleMouseLeave : undefined}
+                  onMouseMove={isActive ? handleMouseMove : undefined}
+                  ref={isActive ? parallaxRef : undefined}
+                  style={{ willChange: "transform" }}
+                >
+                  {slot.dev.photoUrl ? (
+                    <img
+                      alt={slot.dev.name}
+                      className={cn(
+                        "h-full w-full select-none object-contain transition-transform duration-300 group-hover:scale-[1.03]",
+                        slot.dev.name.includes("Meghraj") && "scale-[0.82]"
+                      )}
+                      draggable={false}
+                      src={slot.dev.photoUrl}
+                    />
+                  ) : (
+                    <div className="flex h-full items-center justify-center">
+                      <div className="flex size-32 items-center justify-center rounded-full border border-[#3A3A3A] bg-white/[0.02] font-display text-5xl text-white/30 transition-all duration-300 group-hover:border-white/20 group-hover:bg-white/[0.04] sm:size-40 sm:text-6xl">
+                        {slot.dev.initials}
+                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
-            </motion.div>
+                  )}
+                </div>
+              </motion.div>
+            </button>
           </motion.div>
-        </AnimatePresence>
-      </div>
+        );
+      })}
 
-      {/* Floor shadow */}
-      <div className="absolute -bottom-4 left-1/2 h-8 w-3/5 -translate-x-1/2 bg-[radial-gradient(ellipse_at_center,rgba(255,255,255,0.08)_0%,transparent_70%)] blur-xl" />
+      {/* Modern Flat Black Stage Base */}
+      <div
+        className="pointer-events-none absolute -bottom-16 left-1/2 w-full max-w-[300px] -translate-x-1/2"
+        style={{ perspective: "800px" }}
+      >
+        <div
+          className="relative mx-auto flex h-[280px] w-[280px] items-center justify-center"
+          style={{ transform: "rotateX(75deg)" }}
+        >
+          {/* Flat Solid Black Circle Stage */}
+          <div className="absolute inset-0 rounded-full border border-[#3A3A3A]/20 bg-black/90 shadow-[0_15px_35px_rgba(0,0,0,0.9),inset_0_0_20px_rgba(255,255,255,0.02)]" />
+
+          {/* Concentric Black/Dark Ring detailing */}
+          <svg
+            className="absolute inset-0 h-full w-full overflow-visible text-[#3A3A3A]"
+            viewBox="0 0 200 200"
+          >
+            {/* Solid Ring */}
+            <circle
+              className="opacity-40"
+              cx="100"
+              cy="100"
+              fill="none"
+              r="75"
+              stroke="currentColor"
+              strokeWidth="2"
+            />
+            {/* Dashed Ring */}
+            <circle
+              className="opacity-30"
+              cx="100"
+              cy="100"
+              fill="none"
+              r="62"
+              stroke="currentColor"
+              strokeDasharray="6 4"
+              strokeWidth="1"
+            />
+          </svg>
+        </div>
+      </div>
     </div>
   );
 }

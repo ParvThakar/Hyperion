@@ -33,7 +33,9 @@ export function AgentSelectorRail({
               aria-selected={isActive}
               className={cn(
                 "relative flex flex-col items-center justify-center transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 focus-visible:ring-offset-2 focus-visible:ring-offset-black",
-                isActive ? "text-white" : "text-white/25 hover:text-white/50"
+                isActive
+                  ? "text-[#EEEEED]"
+                  : "text-[#EEEEED]/25 hover:text-[#EEEEED]/50"
               )}
               onClick={() => onSelect(index)}
               role="tab"
@@ -41,19 +43,16 @@ export function AgentSelectorRail({
             >
               {isActive && (
                 <motion.div
-                  className="absolute -top-3 h-1 w-1 rounded-full bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.3)]"
+                  className="absolute -top-3 h-1 w-1 rounded-full bg-[#EEEEED] shadow-[0_0_12px_rgba(238,238,237,0.6)]"
                   layoutId="active-agent-dot"
                   transition={{ type: "spring", stiffness: 300, damping: 30 }}
                 />
               )}
               <span className="font-mono text-base">{numberStr}</span>
-              <span className="mt-1 font-mono text-[0.6rem] uppercase tracking-wider">
-                {dev.initials}
-              </span>
             </button>
 
             {isNotLast && (
-              <span className="mx-2 h-px flex-1 bg-white/10 lg:mx-4" />
+              <span className="mx-2 h-px flex-1 bg-[#3A3A3A] lg:mx-4" />
             )}
           </div>
         );
