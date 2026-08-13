@@ -214,17 +214,30 @@ export function AgentSelect({ devs }: { devs: Dev[] }) {
       {/* ── Details Popup Dialog ── */}
       <AnimatePresence>
         {isDetailsOpen && (
-          <div
+          <motion.div
+            animate={{ opacity: 1 }}
             className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md cursor-pointer"
+            exit={{ opacity: 0 }}
+            initial={{ opacity: 0 }}
             onClick={() => setIsDetailsOpen(false)}
+            transition={{ duration: 0.25 }}
           >
             <motion.div
-              animate={{ opacity: 1, scale: 1, y: 0 }}
+              animate={{
+                clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)",
+              }}
               className="relative w-full max-w-[480px] cursor-default"
-              exit={{ opacity: 0, scale: 0.95, y: 15 }}
-              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              exit={{
+                clipPath: "polygon(100% 100%, 100% 100%, 100% 100%, 100% 100%)",
+              }}
+              initial={{
+                clipPath: "polygon(0% 0%, 0% 0%, 0% 0%, 0% 0%)",
+              }}
               onClick={(e) => e.stopPropagation()}
-              transition={{ type: "spring", stiffness: 300, damping: 25 }}
+              transition={{
+                duration: 0.5,
+                ease: [0.76, 0, 0.24, 1],
+              }}
             >
               {/* Close Button */}
               <button
@@ -254,7 +267,7 @@ export function AgentSelect({ devs }: { devs: Dev[] }) {
                 index={activeIndex}
               />
             </motion.div>
-          </div>
+          </motion.div>
         )}
       </AnimatePresence>
 
