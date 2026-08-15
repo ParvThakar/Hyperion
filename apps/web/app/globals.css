@@ -388,29 +388,4 @@
   );
 }
 
-/* Scan-line sweep — a thin horizontal beam that travels from the
-   top to the bottom of its container once, used by the agent info
-   panel to "activate" content rows as it passes. Fades out at the
-   end so it doesn't linger. */
-@keyframes scanDown {
-  0% {
-    top: 0%;
-    opacity: 0;
-  }
-  8% {
-    opacity: 1;
-  }
-  85% {
-    opacity: 0.6;
-  }
-  100% {
-    top: 100%;
-    opacity: 0;
-  }
-}
 
-@media (prefers-reduced-motion: reduce) {
-  .animate-\[scanDown_0\.8s_0\.15s_ease-out_both\] {
-    animation: none !important;
-  }
-}

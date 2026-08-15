@@ -3,7 +3,6 @@
 import { Reveal } from "@workspace/ui/components/marketing/reveal";
 import { ArrowRight, Compass, GitFork, Sparkles } from "lucide-react";
 import { motion } from "motion/react";
-import Beams from "../components/beams";
 import { CtaLink, Eyebrow, GlowCard } from "../components/marketing-kit";
 import {
   revealVariants,
@@ -76,18 +75,6 @@ const timeline = [
 export default function AboutPage() {
   return (
     <div className="relative">
-      <div className="pointer-events-none absolute inset-x-0 top-0 z-0 h-[650px] select-none overflow-hidden opacity-90">
-        <Beams
-          beamHeight={15}
-          beamNumber={12}
-          beamWidth={2}
-          lightColor="#ffffff"
-          noiseIntensity={1.75}
-          rotation={30}
-          scale={0.2}
-          speed={2}
-        />
-      </div>
       {/* Hero */}
       <section className="relative z-10 pt-32 pb-6">
         <motion.div

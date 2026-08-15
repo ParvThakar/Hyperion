@@ -71,11 +71,19 @@ export function CharacterStage({
               scale: isActive ? 1.15 : 0.65,
               x: isPrev ? "-115%" : slot.role === "next" ? "115%" : "0%",
               zIndex: isActive ? 20 : 10,
+              /* Side figures gain a subtle blur — matches their reduced
+                 opacity so they read as clearly "in the wings" vs centre. */
+              filter: isActive
+                ? "blur(0px)"
+                : reducedMotion
+                  ? "blur(0px)"
+                  : "blur(3px)",
             }}
             className="absolute left-1/2 h-full w-[200px] -translate-x-1/2 sm:w-[240px]"
             initial={{
               opacity: 0,
               scale: 0.8,
+              filter: "blur(0px)",
             }}
             key={slot.dev.name}
             layoutId={`stage-slot-${slot.dev.name}`}
@@ -120,7 +128,7 @@ export function CharacterStage({
                       alt={slot.dev.name}
                       className={cn(
                         "h-full w-full select-none object-contain transition-transform duration-300 group-hover:scale-[1.03]",
-                        slot.dev.name.includes("Meghraj") && "scale-[0.82]"
+                        slot.dev.name.includes("Meghraj") && "scale-[0.70]"
                       )}
                       draggable={false}
                       src={slot.dev.photoUrl}
@@ -138,48 +146,6 @@ export function CharacterStage({
           </motion.div>
         );
       })}
-
-      {/* Modern Flat Black Stage Base */}
-      <div
-        className="pointer-events-none absolute -bottom-16 left-1/2 w-full max-w-[300px] -translate-x-1/2"
-        style={{ perspective: "800px" }}
-      >
-        <div
-          className="relative mx-auto flex h-[280px] w-[280px] items-center justify-center"
-          style={{ transform: "rotateX(75deg)" }}
-        >
-          {/* Flat Solid Black Circle Stage */}
-          <div className="absolute inset-0 rounded-full border border-[#3A3A3A]/20 bg-black/90 shadow-[0_15px_35px_rgba(0,0,0,0.9),inset_0_0_20px_rgba(255,255,255,0.02)]" />
-
-          {/* Concentric Black/Dark Ring detailing */}
-          <svg
-            className="absolute inset-0 h-full w-full overflow-visible text-[#3A3A3A]"
-            viewBox="0 0 200 200"
-          >
-            {/* Solid Ring */}
-            <circle
-              className="opacity-40"
-              cx="100"
-              cy="100"
-              fill="none"
-              r="75"
-              stroke="currentColor"
-              strokeWidth="2"
-            />
-            {/* Dashed Ring */}
-            <circle
-              className="opacity-30"
-              cx="100"
-              cy="100"
-              fill="none"
-              r="62"
-              stroke="currentColor"
-              strokeDasharray="6 4"
-              strokeWidth="1"
-            />
-          </svg>
-        </div>
-      </div>
     </div>
   );
 }

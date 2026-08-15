@@ -1,11 +1,26 @@
 "use client";
 
+import { useScrambleText } from "@workspace/core/hooks/use-scramble-text";
 import { cn } from "@workspace/ui/lib/utils";
 
 interface SingleNavButtonProps {
   direction: "next" | "prev";
   label: string;
   onClick: () => void;
+}
+
+/**
+ * The label text scrambles briefly whenever `label` changes (i.e. whenever
+ * the active carousel slot changes and a new name appears in the wing slot).
+ * Reduced intensity vs the modal: shorter duration (~300ms) via fewer cycles.
+ */
+function ScrambledLabel({ label }: { label: string }) {
+  const scrambled = useScrambleText(label, label, {
+    stagger: 20,
+    speed: 45,
+    cycles: 3,
+  });
+  return <>{scrambled}</>;
 }
 
 export function SingleNavButton({
@@ -33,7 +48,7 @@ export function SingleNavButton({
 
       <div className="flex flex-col">
         <span className="font-mono text-xs font-semibold tracking-wider text-white/90 group-hover:text-white">
-          {label}
+          <ScrambledLabel label={label} />
         </span>
       </div>
 

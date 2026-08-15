@@ -9,6 +9,11 @@ import { AgentInfoPanel } from "./agent-info-panel";
 import { MobileNavControls, SingleNavButton } from "./agent-nav-controls";
 import { CharacterStage } from "./character-stage";
 
+/* ── Motion constants ───────────────────────────────────────── */
+
+/** Snappy ease-out — precise, not playful */
+const SNAP_OUT = [0.16, 1, 0.3, 1] as const;
+
 /* ── Boot Sequence ─────────────────────────────────────────── */
 
 function BootSequence() {
@@ -72,6 +77,9 @@ export function AgentSelect({ devs }: { devs: Dev[] }) {
   /* Keyboard navigation */
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
+      if (isDetailsOpen) {
+        return; // let Escape handler below take over
+      }
       if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
         e.preventDefault();
         goPrev();
@@ -88,7 +96,7 @@ export function AgentSelect({ devs }: { devs: Dev[] }) {
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [devs.length, goNext, goPrev, goTo]);
+  }, [devs.length, goNext, goPrev, goTo, isDetailsOpen]);
 
   /* Close details on Escape key */
   useEffect(() => {
@@ -168,8 +176,24 @@ export function AgentSelect({ devs }: { devs: Dev[] }) {
         </span>
       </motion.div>
 
-      {/* ── Main Stage Grid Area ── */}
-      <div className="relative z-10 flex w-full max-w-[1400px] flex-1 flex-col items-center justify-center px-4 sm:px-8">
+      {/* ── Main Stage Grid Area — recedes when modal is open ── */}
+      <motion.div
+        animate={
+          isDetailsOpen
+            ? {
+                filter: "blur(6px)",
+                scale: 0.97,
+                opacity: 0.7,
+              }
+            : {
+                filter: "blur(0px)",
+                scale: 1,
+                opacity: 1,
+              }
+        }
+        className="relative z-10 flex w-full max-w-[1400px] flex-1 flex-col items-center justify-center px-4 sm:px-8"
+        transition={{ duration: 0.2, ease: "easeOut" }}
+      >
         {/* Desktop Floating PREV Button */}
         <div className="absolute left-2 xl:left-6 top-1/2 z-30 hidden -translate-y-1/2 lg:block">
           <SingleNavButton
@@ -209,65 +233,73 @@ export function AgentSelect({ devs }: { devs: Dev[] }) {
             prevLabel={prevDev?.name.split(" ")[0] ?? ""}
           />
         </div>
-      </div>
+      </motion.div>
 
-      {/* ── Details Popup Dialog ── */}
+      {/* ── Details Modal ── */}
       <AnimatePresence>
         {isDetailsOpen && (
-          <motion.div
-            animate={{ opacity: 1 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md cursor-pointer"
-            exit={{ opacity: 0 }}
-            initial={{ opacity: 0 }}
-            onClick={() => setIsDetailsOpen(false)}
-            transition={{ duration: 0.25 }}
-          >
+          <>
+            {/* Backdrop — plain opacity fade, 200ms */}
             <motion.div
-              animate={{
-                clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)",
-              }}
-              className="relative w-full max-w-[480px] cursor-default"
-              exit={{
-                clipPath: "polygon(100% 100%, 100% 100%, 100% 100%, 100% 100%)",
-              }}
-              initial={{
-                clipPath: "polygon(0% 0%, 0% 0%, 0% 0%, 0% 0%)",
-              }}
-              onClick={(e) => e.stopPropagation()}
-              transition={{
-                duration: 0.5,
-                ease: [0.76, 0, 0.24, 1],
-              }}
-            >
-              {/* Close Button */}
-              <button
-                aria-label="Close details"
-                className="absolute top-4 right-4 z-50 text-[#EEEEED]/40 hover:text-[#EEEEED] transition-colors duration-200"
-                onClick={() => setIsDetailsOpen(false)}
-                type="button"
-              >
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    d="M6 18L18 6M6 6l12 12"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={1.5}
-                  />
-                </svg>
-              </button>
+              animate={{ opacity: 1 }}
+              aria-hidden="true"
+              className="fixed inset-0 z-40 bg-black/60 backdrop-blur-md"
+              exit={{ opacity: 0 }}
+              initial={{ opacity: 0 }}
+              onClick={() => setIsDetailsOpen(false)}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+            />
 
-              <AgentInfoPanel
-                agentId={agentId}
-                dev={activeDev}
-                index={activeIndex}
-              />
+            {/* Modal card — snappy ease-out enter, faster ease-in exit */}
+            <motion.div
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              aria-modal="true"
+              className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none"
+              exit={{
+                opacity: 0,
+                scale: 0.94,
+                y: 8,
+                transition: { duration: 0.2, ease: "easeIn" },
+              }}
+              initial={{ opacity: 0, scale: 0.94, y: 12 }}
+              role="dialog"
+              transition={{ duration: 0.28, ease: SNAP_OUT }}
+            >
+              <div
+                className="relative w-full max-w-[480px] cursor-default pointer-events-auto"
+                onClick={(e) => e.stopPropagation()}
+                onKeyDown={(e) => e.stopPropagation()}
+              >
+                {/* Close Button */}
+                <button
+                  aria-label="Close details"
+                  className="absolute top-4 right-4 z-50 text-[#EEEEED]/40 hover:text-[#EEEEED] transition-colors duration-200"
+                  onClick={() => setIsDetailsOpen(false)}
+                  type="button"
+                >
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M6 18L18 6M6 6l12 12"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={1.5}
+                    />
+                  </svg>
+                </button>
+
+                <AgentInfoPanel
+                  agentId={agentId}
+                  dev={activeDev}
+                  index={activeIndex}
+                />
+              </div>
             </motion.div>
-          </motion.div>
+          </>
         )}
       </AnimatePresence>
 
