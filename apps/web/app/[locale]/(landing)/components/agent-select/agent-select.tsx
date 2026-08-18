@@ -1,18 +1,12 @@
 "use client";
 
 import { useDecryption } from "@workspace/core/hooks/use-decryption";
-import { AnimatePresence, motion } from "motion/react";
+import { motion } from "motion/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Dev } from "../dev-cards";
 import { AgentEnvironment } from "./agent-environment";
-import { AgentInfoPanel } from "./agent-info-panel";
 import { MobileNavControls, SingleNavButton } from "./agent-nav-controls";
 import { CharacterStage } from "./character-stage";
-
-/* ── Motion constants ───────────────────────────────────────── */
-
-/** Snappy ease-out — precise, not playful */
-const SNAP_OUT = [0.16, 1, 0.3, 1] as const;
 
 /* ── Boot Sequence ─────────────────────────────────────────── */
 
@@ -140,7 +134,6 @@ export function AgentSelect({ devs }: { devs: Dev[] }) {
   const nextIndex = activeIndex < devs.length - 1 ? activeIndex + 1 : 0;
   const prevDev = devs[prevIndex] ?? activeDev;
   const nextDev = devs[nextIndex] ?? activeDev;
-  const agentId = `${activeDev.initials}-${String(activeIndex + 1).padStart(2, "0")}`;
 
   return (
     <section
@@ -204,7 +197,15 @@ export function AgentSelect({ devs }: { devs: Dev[] }) {
         </div>
 
         {/* Dynamic 3-Character Stage Carousel */}
-        <div className="flex w-full items-center justify-center">
+        {/* Click-out backdrop to close modal */}
+        {isDetailsOpen && (
+          <div 
+            className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm cursor-default" 
+            onClick={() => setIsDetailsOpen(false)}
+            aria-hidden="true" 
+          />
+        )}
+        <div className="flex w-full items-center justify-center relative z-50">
           <CharacterStage
             activeDev={activeDev}
             nextDev={nextDev}
@@ -212,6 +213,8 @@ export function AgentSelect({ devs }: { devs: Dev[] }) {
             onOpenDetails={() => setIsDetailsOpen(true)}
             onPrev={goPrev}
             prevDev={prevDev}
+            isDetailsOpen={isDetailsOpen}
+            index={activeIndex}
           />
         </div>
 
@@ -234,74 +237,6 @@ export function AgentSelect({ devs }: { devs: Dev[] }) {
           />
         </div>
       </motion.div>
-
-      {/* ── Details Modal ── */}
-      <AnimatePresence>
-        {isDetailsOpen && (
-          <>
-            {/* Backdrop — plain opacity fade, 200ms */}
-            <motion.div
-              animate={{ opacity: 1 }}
-              aria-hidden="true"
-              className="fixed inset-0 z-40 bg-black/60 backdrop-blur-md"
-              exit={{ opacity: 0 }}
-              initial={{ opacity: 0 }}
-              onClick={() => setIsDetailsOpen(false)}
-              transition={{ duration: 0.2, ease: "easeOut" }}
-            />
-
-            {/* Modal card — snappy ease-out enter, faster ease-in exit */}
-            <motion.div
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              aria-modal="true"
-              className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none"
-              exit={{
-                opacity: 0,
-                scale: 0.94,
-                y: 8,
-                transition: { duration: 0.2, ease: "easeIn" },
-              }}
-              initial={{ opacity: 0, scale: 0.94, y: 12 }}
-              role="dialog"
-              transition={{ duration: 0.28, ease: SNAP_OUT }}
-            >
-              <div
-                className="relative w-full max-w-[480px] cursor-default pointer-events-auto"
-                onClick={(e) => e.stopPropagation()}
-                onKeyDown={(e) => e.stopPropagation()}
-              >
-                {/* Close Button */}
-                <button
-                  aria-label="Close details"
-                  className="absolute top-4 right-4 z-50 text-[#EEEEED]/40 hover:text-[#EEEEED] transition-colors duration-200"
-                  onClick={() => setIsDetailsOpen(false)}
-                  type="button"
-                >
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M6 18L18 6M6 6l12 12"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={1.5}
-                    />
-                  </svg>
-                </button>
-
-                <AgentInfoPanel
-                  agentId={agentId}
-                  dev={activeDev}
-                  index={activeIndex}
-                />
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
 
       {/* ── Bottom gradient fade ── */}
       <div

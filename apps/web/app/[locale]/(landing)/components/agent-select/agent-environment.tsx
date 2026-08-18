@@ -6,9 +6,16 @@ import { useId } from "react";
 
 interface AgentEnvironmentProps {
   activeIndex: number;
+  /** True while the details HUD is open — brightens and enlarges the
+   *  spotlight slightly so the atmosphere itself reads as "focused" on
+   *  the activated developer, without introducing any new color. */
+  boosted?: boolean;
 }
 
-export function AgentEnvironment({ activeIndex }: AgentEnvironmentProps) {
+export function AgentEnvironment({
+  activeIndex,
+  boosted = false,
+}: AgentEnvironmentProps) {
   const prefersReducedMotion = useReducedMotion();
   const baseId = useId();
 
@@ -60,7 +67,14 @@ export function AgentEnvironment({ activeIndex }: AgentEnvironmentProps) {
         className="absolute inset-0 flex items-center justify-center"
         transition={{ duration: 0.8, ease: "easeOut" }}
       >
-        <div className="h-[600px] w-[600px] rounded-full bg-white opacity-[0.04] blur-[100px]" />
+        <motion.div
+          animate={{
+            opacity: boosted ? 0.065 : 0.04,
+            scale: boosted ? 1.12 : 1,
+          }}
+          className="h-[600px] w-[600px] rounded-full bg-white blur-[100px]"
+          transition={{ duration: 0.6, ease: "easeOut" }}
+        />
       </motion.div>
 
       {/* Atmospheric Fog Layers */}
