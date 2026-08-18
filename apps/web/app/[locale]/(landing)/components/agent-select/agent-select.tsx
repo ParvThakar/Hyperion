@@ -1,12 +1,14 @@
 "use client";
 
 import { useDecryption } from "@workspace/core/hooks/use-decryption";
-import { motion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Dev } from "../dev-cards";
 import { AgentEnvironment } from "./agent-environment";
-import { MobileNavControls, SingleNavButton } from "./agent-nav-controls";
+import { AgentHUD } from "./agent-hud";
 import { CharacterStage } from "./character-stage";
+
+/* ── Motion constants ───────────────────────────────────────── */
 
 /* ── Boot Sequence ─────────────────────────────────────────── */
 
@@ -149,7 +151,7 @@ export function AgentSelect({ devs }: { devs: Dev[] }) {
       {isBooting && (
         <motion.div
           animate={{ opacity: 1 }}
-          className="absolute inset-0 z-50 flex items-center justify-center bg-[#080705]"
+          className="absolute inset-0 z-[100] flex items-center justify-center bg-[#080705]"
           exit={{ opacity: 0 }}
           initial={{ opacity: 1 }}
           transition={{ duration: 0.4 }}
@@ -169,74 +171,45 @@ export function AgentSelect({ devs }: { devs: Dev[] }) {
         </span>
       </motion.div>
 
-      {/* ── Main Stage Grid Area — recedes when modal is open ── */}
-      <motion.div
-        animate={
-          isDetailsOpen
-            ? {
-                filter: "blur(6px)",
-                scale: 0.97,
-                opacity: 0.7,
-              }
-            : {
-                filter: "blur(0px)",
-                scale: 1,
-                opacity: 1,
-              }
-        }
-        className="relative z-10 flex w-full max-w-[1400px] flex-1 flex-col items-center justify-center px-4 sm:px-8"
-        transition={{ duration: 0.2, ease: "easeOut" }}
-      >
-        {/* Desktop Floating PREV Button */}
-        <div className="absolute left-2 xl:left-6 top-1/2 z-30 hidden -translate-y-1/2 lg:block">
-          <SingleNavButton
-            direction="prev"
-            label={prevDev?.name.split(" ")[0] ?? ""}
-            onClick={goPrev}
-          />
-        </div>
-
+      {/* ── Main Stage Grid Area ── */}
+      <div className="relative flex w-full max-w-[1400px] flex-1 flex-col items-center justify-center px-4 sm:px-8">
         {/* Dynamic 3-Character Stage Carousel */}
-        {/* Click-out backdrop to close modal */}
-        {isDetailsOpen && (
-          <div 
-            className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm cursor-default" 
-            onClick={() => setIsDetailsOpen(false)}
-            aria-hidden="true" 
-          />
-        )}
-        <div className="flex w-full items-center justify-center relative z-50">
+        <div className="flex w-full items-center justify-center">
           <CharacterStage
             activeDev={activeDev}
+            isDetailsOpen={isDetailsOpen}
             nextDev={nextDev}
             onNext={goNext}
             onOpenDetails={() => setIsDetailsOpen(true)}
             onPrev={goPrev}
             prevDev={prevDev}
-            isDetailsOpen={isDetailsOpen}
-            index={activeIndex}
           />
         </div>
+      </div>
 
-        {/* Desktop Floating NEXT Button */}
-        <div className="absolute right-2 xl:right-6 top-1/2 z-30 hidden -translate-y-1/2 lg:block">
-          <SingleNavButton
-            direction="next"
-            label={nextDev?.name.split(" ")[0] ?? ""}
-            onClick={goNext}
-          />
-        </div>
+      {/* ── Details Modal ── */}
+      <AnimatePresence>
+        {isDetailsOpen && (
+          <>
+            {/* Backdrop — plain opacity fade, 200ms */}
+            <motion.div
+              animate={{ opacity: 1 }}
+              aria-hidden="true"
+              className="fixed inset-0 z-10 bg-black/60 backdrop-blur-md"
+              exit={{ opacity: 0 }}
+              initial={{ opacity: 0 }}
+              onClick={() => setIsDetailsOpen(false)}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+            />
 
-        {/* Mobile Nav Controls */}
-        <div className="mt-4 flex justify-center lg:hidden">
-          <MobileNavControls
-            nextLabel={nextDev?.name.split(" ")[0] ?? ""}
-            onNext={goNext}
-            onPrev={goPrev}
-            prevLabel={prevDev?.name.split(" ")[0] ?? ""}
-          />
-        </div>
-      </motion.div>
+            <AgentHUD
+              dev={activeDev}
+              index={activeIndex}
+              onClose={() => setIsDetailsOpen(false)}
+            />
+          </>
+        )}
+      </AnimatePresence>
 
       {/* ── Bottom gradient fade ── */}
       <div

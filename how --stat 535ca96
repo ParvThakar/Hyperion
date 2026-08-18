@@ -1,0 +1,19 @@
+[33mcommit fe6a0cd0c6d0c35a66d1582a0da8f047b05834a4[m[33m ([m[1;31mpersonal/parv[m[33m)[m
+Author: Parv Thakar <parvthakar@gmail.com>
+Date:   Sat Aug 15 22:30:28 2026 +0530
+
+    changed info panel animation of devs
+
+ apps/native/next-env.d.ts                          |   2 [32m+[m[31m-[m
+ apps/web/app/[locale]/(landing)/about/page.tsx     |  15 [32m+[m[31m-[m
+ .../components/agent-select/agent-info-panel.tsx   | 347 [32m++++++++++[m[31m------[m
+ .../components/agent-select/agent-nav-controls.tsx |  17 [32m+[m[31m-[m
+ .../components/agent-select/agent-select.tsx       | 134 [32m++++[m[31m---[m
+ .../components/agent-select/character-stage.tsx    |  52 [32m+[m[31m--[m
+ .../components/agent-select/typewriter-text.tsx    |  82 [31m----[m
+ .../app/[locale]/(landing)/components/beams.css    |   5 [31m-[m
+ .../app/[locale]/(landing)/components/beams.tsx    | 436 [31m---------------------[m
+ apps/web/app/globals.css                           |  25 [31m--[m
+ apps/web/next-env.d.ts                             |   2 [32m+[m[31m-[m
+ packages/core/src/hooks/use-scramble-text.ts       | 121 [32m++++++[m
+ 12 files changed, 461 insertions(+), 777 deletions(-)

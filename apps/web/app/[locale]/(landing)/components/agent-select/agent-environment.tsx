@@ -2,7 +2,13 @@
 
 import { cn } from "@workspace/ui/lib/utils";
 import { motion, useReducedMotion } from "motion/react";
+import dynamic from "next/dynamic";
 import { useId } from "react";
+
+const LightRays = dynamic(
+  () => import("./light-rays").then((mod) => mod.LightRays),
+  { ssr: false }
+);
 
 interface AgentEnvironmentProps {
   activeIndex: number;
@@ -60,6 +66,22 @@ export function AgentEnvironment({
           backgroundSize: "40px 40px",
         }}
       />
+
+      {/* Light Rays */}
+      <div className="absolute inset-0 z-0">
+        <LightRays
+          className="h-full w-full opacity-80"
+          fadeDistance={1.2}
+          followMouse={!prefersReducedMotion}
+          lightSpread={0.8}
+          mouseInfluence={0.1}
+          pulsating={!prefersReducedMotion}
+          rayLength={1.5}
+          raysColor="#ffffff"
+          raysOrigin="top-center"
+          raysSpeed={1.5}
+        />
+      </div>
 
       {/* Spotlight */}
       <motion.div

@@ -3,12 +3,11 @@
 import { useScrambleText } from "@workspace/core/hooks/use-scramble-text";
 import { cn } from "@workspace/ui/lib/utils";
 import { motion, useReducedMotion, type Variants } from "motion/react";
-import { type ReactNode, useState } from "react";
+import type { ReactNode } from "react";
 import type { Dev } from "../dev-cards";
 import { useMagnetic } from "./use-magnetic";
 
 interface AgentHUDProps {
-  agentId: string;
   dev: Dev;
   index: number;
   onClose: () => void;
@@ -32,10 +31,10 @@ const CHILD_DELAY = 0.16;
    into its resting corner — a targeting HUD deploying readouts around
    its subject rather than four cards fading onto the screen. */
 const CORNER_OFFSET: Record<Corner, { x: number; y: number }> = {
-  bl: { x: 40, y: -28 },
-  br: { x: -40, y: -28 },
-  tl: { x: 40, y: 28 },
-  tr: { x: -40, y: 28 },
+  bl: { x: 120, y: -60 },
+  br: { x: -120, y: -60 },
+  tl: { x: 120, y: 60 },
+  tr: { x: -120, y: 60 },
 };
 
 /* Reveal direction per corner — left/right pair mirrors so the four
@@ -47,14 +46,6 @@ const CLIP_HIDDEN: Record<Corner, string> = {
   tr: "inset(0% 100% 0% 0%)", // left → right
 };
 const CLIP_VISIBLE = "inset(0% 0% 0% 0%)";
-
-/* Lock-on bracket sits at the panel's corner nearest the character. */
-const BRACKET_POSITION: Record<Corner, string> = {
-  bl: "top-1.5 right-1.5 border-t border-r",
-  br: "top-1.5 left-1.5 border-t border-l",
-  tl: "bottom-1.5 right-1.5 border-b border-r",
-  tr: "bottom-1.5 left-1.5 border-b border-l",
-};
 
 const ROTATE_FROM: Record<Corner, number> = {
   bl: -3,
@@ -158,9 +149,6 @@ interface PanelShellProps {
   children: ReactNode;
   className: string;
   corner: Corner;
-  hovered: boolean;
-  onHoverEnd: () => void;
-  onHoverStart: () => void;
   reducedMotion: boolean;
 }
 
@@ -168,17 +156,12 @@ function PanelShell({
   children,
   className,
   corner,
-  hovered,
-  onHoverEnd,
-  onHoverStart,
   reducedMotion,
 }: PanelShellProps) {
   return (
     <div className={cn("absolute", className)}>
       <motion.div
         className="group pointer-events-auto relative rounded-xl border border-[#3A3A3A] bg-[#080705]/95 p-5 shadow-[0_0_40px_rgba(0,0,0,0.85)] backdrop-blur-2xl"
-        onHoverEnd={onHoverEnd}
-        onHoverStart={onHoverStart}
         style={{ transformOrigin: corner.includes("t") ? "bottom" : "top" }}
         variants={buildPanelVariants(corner, reducedMotion)}
         whileHover={
@@ -193,16 +176,6 @@ function PanelShell({
       >
         {/* Top accent line — matches the dossier card language */}
         <div className="absolute inset-x-0 top-0 h-0.5 rounded-t-xl bg-gradient-to-r from-transparent via-[#EEEEED]/25 to-transparent" />
-        {/* Lock-on corner bracket, nearest the character — extends
-            slightly on hover, a tiny reward for the interaction. */}
-        <div
-          aria-hidden={true}
-          className={cn(
-            "absolute h-3 w-3 border-[#EEEEED]/50 transition-all duration-200",
-            hovered && "h-4 w-4 border-[#EEEEED]/80",
-            BRACKET_POSITION[corner]
-          )}
-        />
         {children}
       </motion.div>
     </div>
@@ -219,7 +192,7 @@ function PanelLabel({ children }: { children: ReactNode }) {
 
 /* ── Root component ───────────────────────────────────────────── */
 
-export function AgentHUD({ agentId, dev, index, onClose }: AgentHUDProps) {
+export function AgentHUD({ dev, index, onClose }: AgentHUDProps) {
   const reducedMotion = useReducedMotion() ?? false;
   const scrambledName = useScrambleText(dev.name, index, {
     cycles: 3,
@@ -227,8 +200,6 @@ export function AgentHUD({ agentId, dev, index, onClose }: AgentHUDProps) {
     stagger: 12,
   });
   const titleId = "agent-hud-name";
-
-  const [hoveredCorner, setHoveredCorner] = useState<Corner | null>(null);
 
   const githubRef = useMagnetic<HTMLAnchorElement>({ strength: 6 });
   const linkedinRef = useMagnetic<HTMLAnchorElement>({ strength: 6 });
@@ -250,11 +221,8 @@ export function AgentHUD({ agentId, dev, index, onClose }: AgentHUDProps) {
       <div className="relative mx-auto h-full w-full max-w-[1400px] px-4 sm:px-8">
         {/* ── Identity — top-left ── */}
         <PanelShell
-          className="left-[3%] top-[14%] w-[320px]"
+          className="left-[5%] top-[16%] w-[320px] xl:left-[12%] xl:top-[22%]"
           corner="tl"
-          hovered={hoveredCorner === "tl"}
-          onHoverEnd={() => setHoveredCorner(null)}
-          onHoverStart={() => setHoveredCorner("tl")}
           reducedMotion={reducedMotion}
         >
           <motion.div
@@ -269,12 +237,6 @@ export function AgentHUD({ agentId, dev, index, onClose }: AgentHUDProps) {
             <span className="font-mono text-[0.48rem] uppercase tracking-[0.35em] text-[#EEEEED]/40">
               Active
             </span>
-          </motion.div>
-          <motion.div
-            className="mt-1 font-mono text-[0.5rem] uppercase tracking-[0.4em] text-[#EEEEED]/60"
-            variants={itemVariants}
-          >
-            DEV /&#47; {agentId}
           </motion.div>
           <motion.h2
             className="mt-1.5 font-display text-xl font-bold tracking-tight text-[#EEEEED]"
@@ -293,11 +255,8 @@ export function AgentHUD({ agentId, dev, index, onClose }: AgentHUDProps) {
 
         {/* ── Loadout — top-right ── */}
         <PanelShell
-          className="right-[3%] top-[14%] w-[300px]"
+          className="right-[5%] top-[16%] w-[300px] xl:right-[12%] xl:top-[22%]"
           corner="tr"
-          hovered={hoveredCorner === "tr"}
-          onHoverEnd={() => setHoveredCorner(null)}
-          onHoverStart={() => setHoveredCorner("tr")}
           reducedMotion={reducedMotion}
         >
           <motion.div variants={itemVariants}>
@@ -321,11 +280,8 @@ export function AgentHUD({ agentId, dev, index, onClose }: AgentHUDProps) {
 
         {/* ── Directive / Bio — bottom-left (largest) ── */}
         <PanelShell
-          className="bottom-[10%] left-[3%] w-[380px]"
+          className="bottom-[12%] left-[5%] w-[380px] xl:bottom-[18%] xl:left-[12%]"
           corner="bl"
-          hovered={hoveredCorner === "bl"}
-          onHoverEnd={() => setHoveredCorner(null)}
-          onHoverStart={() => setHoveredCorner("bl")}
           reducedMotion={reducedMotion}
         >
           <motion.div variants={itemVariants}>
@@ -341,11 +297,8 @@ export function AgentHUD({ agentId, dev, index, onClose }: AgentHUDProps) {
 
         {/* ── Core Contribution + socials — bottom-right ── */}
         <PanelShell
-          className="right-[3%] bottom-[10%] w-[380px]"
+          className="right-[5%] bottom-[12%] w-[380px] xl:right-[12%] xl:bottom-[18%]"
           corner="br"
-          hovered={hoveredCorner === "br"}
-          onHoverEnd={() => setHoveredCorner(null)}
-          onHoverStart={() => setHoveredCorner("br")}
           reducedMotion={reducedMotion}
         >
           <motion.div variants={itemVariants}>
